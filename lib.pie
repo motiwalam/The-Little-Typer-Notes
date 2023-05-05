@@ -1,0 +1,75 @@
+#lang pie
+
+;@section types
+(claim NaryOp (-> Nat U U))
+(define NaryOp
+    (λ (n a)
+        (iter-Nat n a (λ (u) (-> a u)))))
+
+(claim UNat U)
+(define UNat (NaryOp 1 Nat))
+
+(claim BinNat U)
+(define BinNat (NaryOp 2 Nat))
+
+;@section Combinators
+
+;@subsection I (identity)
+(claim id 
+    (Π ((a U)) (-> a a)))
+(define id
+    (λ (a) (λ (x) x)))
+
+;@subsection C (flip)
+(claim flip
+    (Π ((a U) (b U) (c U)) (-> (-> a b c) (-> b a c))))
+(define flip
+    (λ (a b c)
+        (λ (f)
+            (λ (x y) (f y x)))))
+
+;@subsection B (compose)
+(claim B
+    (Π ((a U) (b U) (c U)) (-> (-> b c) (-> a b) (-> a c))))
+(define B
+    (λ (a b c)
+        (λ (f g)
+            (λ (x) (f (g x))))))
+
+;@subsection B2 (compose unary with binary)
+(claim B2
+    (Π ((a U) (b U) (c U) (d U)) (-> (-> c d) (-> a b c) (-> a b d))))
+;TODO: is it possible to use the B2 = BBB construction?
+(define B2
+    (λ (a b c d)
+        (λ (f g)
+            (λ (x y) (f (g x y))))))
+
+;@subsection iterate-n
+(claim iterate-n
+    (Π ((a U)) (-> (-> a a) a Nat a)))
+(define iterate-n
+    (λ (a)
+        (λ (f s n)
+            (iter-Nat n s f))))
+
+
+;@section Arithmetic
+;@subsection successor
+(claim succ UNat)
+(define succ (λ (n) (add1 n)))
+
+(claim pred UNat)
+(define pred (λ (n) (which-Nat n zero (id Nat))))
+
+;@subsection addition
+(claim + BinNat)
+(define + ((iterate-n Nat) succ))
+
+;@subsection subtraction
+(claim - BinNat)
+(define - ((iterate-n Nat) pred))
+
+;@subsection multiplication
+(claim * BinNat)
+(define * (λ (n) ((iterate-n Nat) (+ n) 0)))
