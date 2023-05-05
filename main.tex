@@ -1,0 +1,213 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{thmtools}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{framed}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tcolorbox}
+
+\hypersetup{
+    colorlinks,
+    linkcolor={blue!80!black},
+    citecolor={blue!80!black},
+    urlcolor={blue!80!black}
+}
+
+\colorlet{LightGray}{White!90!Periwinkle}
+\colorlet{LightOrange}{Orange!15}
+\colorlet{LightGreen}{Green!15}
+
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\declaretheoremstyle[name=Theorem,]{thmsty}
+\declaretheorem[style=thmsty,numberwithin=section]{theorem}
+\tcolorboxenvironment{theorem}{colback=LightGray}
+
+\declaretheoremstyle[name=Proposition,]{prosty}
+\declaretheorem[style=prosty,numberlike=theorem]{proposition}
+\tcolorboxenvironment{proposition}{colback=LightOrange}
+
+\declaretheoremstyle[name=Principle,]{prcpsty}
+\declaretheorem[style=prcpsty,numberlike=theorem]{principle}
+\tcolorboxenvironment{principle}{colback=LightGreen}
+
+\setstretch{1.2}
+\geometry{
+    textheight=9in,
+    textwidth=5.5in,
+    top=1in,
+    headheight=12pt,
+    headsep=25pt,
+    footskip=30pt
+}
+
+% ------------------------------------------------------------------------------
+
+\begin{document}
+
+% ------------------------------------------------------------------------------
+% Cover Page and ToC
+% ------------------------------------------------------------------------------
+
+\title{ \normalsize \textsc{}
+		\\ [2.0cm]
+		\HRule{1.5pt} \\
+		notes on \LARGE \textbf{\uppercase{The Little Typer}
+		\HRule{2.0pt} \\ [0.6cm] \LARGE{CSC392} \vspace*{10\baselineskip}}
+		}
+\date{}
+\author{\textbf{Mustafa Motiwala} \\ 
+		1009298868}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+% ------------------------------------------------------------------------------
+
+\section{The More Things Change, the More They Stay the Same}
+\subsection{Summary}
+This chapter introduces terminology, focusing on \textit{judgements} (propositional statements of a specific shape), \textit{expressions} (every well-formed statement about which it makes sense to make judgements), and \textit{types}.
+
+\subsection{The \ttt{Atom} type}
+\begin{itemize}
+    \item infinitely many constructors! (each atom constructs itself)
+    \item an atom is a tick-mark followed by a sequence of letters and hyphens
+    \begin{itemize}
+        \item \ttt{'a, 'b, 'a-b-c} are atoms
+        \item \ttt{'0, 'a0, ', ''} are \textbf{not} atoms
+    \end{itemize}
+\end{itemize}
+
+\subsection{Judgements}
+\begin{itemize}
+    \item Has \textbf{four} forms
+        \begin{enumerate}
+            \item \underline{\phantom{blank}} is a \underline{\phantom{blank}}.
+                \begin{itemize}
+                    \item \ttt{'a} is a \ttt{Atom}.
+                    \item \ttt{'0} is a \ttt{Atom} (not true but still a judgement).
+                \end{itemize}
+            \item \underline{\phantom{blank}} is the same \underline{\phantom{blank}} as \underline{\phantom{blank}}.
+                \begin{itemize}
+                    \item \ttt{'a} is the same \ttt{Atom} as \ttt{'a}.
+                    \item \ttt{'b} is the same \ttt{Atom} as \ttt{(cdr (cons 'a 'b))}.
+                \end{itemize}
+            \item \underline{\phantom{blank}} is a type.
+                \begin{itemize}
+                    \item \ttt{Atom} is a type.
+                    \item \ttt{(Pair Atom Atom)} is a type.
+                \end{itemize}
+            \item \underline{\phantom{blank}} and \underline{\phantom{blank}} are the same type.
+                \begin{itemize}
+                    \item \ttt{Atom} and \ttt{Atom} are the same type.
+                \end{itemize}
+        \end{enumerate}
+    \item Can be believable (true) or not believable (false).
+    \item Some judgements require other judgements (i.e, presuppositions) to even make sense.
+        \begin{itemize}
+            \item the judgment ``\ttt{'a} is the same \ttt{'b} as \ttt{'c}" requires first the judgement that ``\ttt{'b} is a type"
+        \end{itemize}
+\end{itemize}
+
+\subsection{Normal Forms}
+\begin{itemize}
+    \item The \textit{normal form} of an expression is ``the most direct" (\textcolor{red}{how can we formalize this?}) way of writing that expression.
+    \item Allows us to define equality on expressions. Two expressions are the same if and only if their normal forms are the same.
+        \begin{itemize}
+            \item \textbf{Note:} Sameness is a judgement that is different for types and non-types.
+            \item If expressions \(A\) and \(B\) are types, then they are the same type (judgement 4) iff their normal forms are identical.
+            \item If expressions \(A\) and \(B\) are not types but are themselves described by a type \(T\) (judgement 1), then \(A\) and \(B\) are the same iff their normal forms (with respect to \(T\)) are identical.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Constructors \& Type Constructors}
+\begin{itemize}
+    \item A type is defined by describing its constructors; \textbf{constructor expressions are the direct ways of building expressions with that type}
+        \begin{itemize}
+            \item \ttt{zero} and \ttt{add1} are the constructors of the \ttt{Nat} type.
+            \item \ttt{cons} is the constructor of \ttt{Pair} types.
+            \item Each atom constructs itself.
+        \end{itemize}
+    \item type constructors construct types.
+        \begin{itemize}
+            \item \ttt{Pair} is a type constructor; \ttt{Pair} on its own is not a type - it needs two arguments to define a new type.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Values}
+\begin{itemize}
+    \item A value is an expression with a constructor at the top.
+    \item Since constructor arguments do not have to be normal, not all values are normal.
+    \item Finding a value of an expression is known as evaluation.
+    \item Since values don't have to be normal, one expression can have multiple values.
+    \item (\textbf{not in book}) normal forms (of non-type expressions) are values.
+\end{itemize}
+
+\subsection{Claims and Definitions}
+\begin{itemize}
+    \item We associate a name with an expression via \ttt{define}
+    \begin{itemize}
+        \item \ttt{(define two (add1 (add1 zero)))}
+    \end{itemize}
+    \item Names must first be given types via \ttt{claim} \textit{before defining}.
+    \begin{itemize}
+        \item \ttt{(claim two Nat)}
+    \end{itemize}
+    \item These are forever. Names can be \ttt{claim}ed and \ttt{define}d at most once.
+\end{itemize}
+
+\section{Doin' What Comes Naturally}
+\subsection{Summary}
+This chapter focuses heavily on \textit{eliminators} which are opposed to \textit{constructors} that are discussed in the previous chapter.
+\\ \\
+We discuss the \(\lambda\) constructor and its eliminator, the application operator (juxtaposition in Pie). The \ttt{which-Nat} eliminator for the \ttt{Nat} type is also introduced.
+\\ \\
+Recursion is not an option in Pie.
+\\ \\
+We also discuss the \(\mathcal{U}\) type, which is the type of types. Every \(\mathcal{U}\) is a type, but not every type is a \(\mathcal{U}\); this is because \(\mathcal{U}\) is a type but is not a \(\mathcal{U}\) (no type is itself).
+\\ \\
+Other trivial things like the semantics of function application (substitution), ``neutral" expressions (expressions with free variables), and more on pairs, \ttt{cons}, \ttt{car}, and \ttt{cdr}.
+\subsection{Constructors and Eliminators}
+\begin{itemize}
+    \item Constructors \textit{build} values whereas Eliminators \textit{dismantle} values.
+        \begin{itemize}
+            \item \ttt{(cons 1 2)} builds a \ttt{(Pair Nat Nat)}; to then access the numbers \ttt{1} and \ttt{2} again, we use \ttt{car} and \ttt{cdr}.
+            \item \ttt{(\(\lambda\) (s) s)} builds a \ttt{(\(\rightarrow\) Atom Atom)}; application is the eliminator for functions
+        \end{itemize}
+    \item The application eliminator for functions works by pure substitution. Hence, if \ttt{f} is a \ttt{(\(\rightarrow\) X Y)} then \ttt{(\(\lambda\) (y) (f y))} is the same \ttt{(\(\rightarrow\) X Y)} as \ttt{f} \textit{as long as \ttt{y} does not appear in \ttt{f}}. \textcolor{red}{Is this last condition really necessary in Pie, or have the authors introduced it just to make teaching the semantics of function application simpler?}
+    \item The eliminator for \ttt{Nat} is \ttt{which-Nat} which takes a \ttt{Nat} \(k\), an expression which is returned if \(k = 0\) and a function \ttt{f} which, if \(k = \ttt{(add1 n)}\) is equal to \ttt{(f n)}. So, \[
+        \ttt{(\(\lambda\) (k) (which-Nat k zero add1))}
+    \]
+    is a silly way of implementing the identity on \ttt{Nat}. \textcolor{red}{How do we write the type of \ttt{which-Nat}? What is the syntax for type variables?}
+    \item \textbf{Note:} in languages like Haskell and Erlang that support pattern matching, it seems like we get eliminators built in to the syntax of the language. \textcolor{red}{How do Pie eliminators differ from pattern matching?}
+\end{itemize}
+\subsection{Type Values and the Universal Type \(\mathcal{U}\)}
+\begin{itemize}
+    \item \ttt{\(\mathcal{U}\)} is the universal type; it is the type of types.
+    \item To define a type alias, we use \ttt{(claim alias \(\mathcal{U}\))} and \ttt{(define alias type-expr)}
+        \begin{itemize}
+            \item \ttt{(claim Predicate \(\mathcal{U}\))} and \ttt{(define Predicate (\(\rightarrow\) Nat Bool)}
+        \end{itemize}
+    \item Type constructors are parameterized types, such as \ttt{Pair} or \ttt{\(\rightarrow\)}.
+    \item Type values are expressions with a type constructor at the top.
+    \item Every \(\mathcal{U}\) is a type; but not all types are \(\mathcal{U}\) (in particular, \(\mathcal{U}\) is a type but not a \(\mathcal{U}\) because no type is itself)
+\end{itemize}
+\subsection{Equivalence of expressions}
+\begin{itemize}
+    \item Neutral expressions are those with free variables; identically written neutral expressions are always the same, regardless of type.
+    \item The semantics of \ttt{claim} and \ttt{define} are as you'd expect; if \ttt{name} is \ttt{claim}ed to be an \ttt{X} and \ttt{define}d to be \ttt{expr}, then \ttt{name} is the same \ttt{X} as \ttt{expr}.
+    \item \(\eta\)-equivalence; \ttt{f} is the same function as \ttt{(\(\lambda\) (x) (f x))}.
+    \item If \ttt{p} is a \ttt{(Pair X Y)} then \ttt{p} is the same \ttt{(Pair X Y)} as \ttt{(cons (car p) (cdr p))}.
+\end{itemize}
+\end{document}
