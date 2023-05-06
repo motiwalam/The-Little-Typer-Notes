@@ -1,90 +1,3 @@
-
-\subsection{Types}
-
-\subsubsection{NaryOp} \label{code:NaryOp}
-\begin{minted}{scheme}
-(claim NaryOp (-> Nat U U))
-(define NaryOp
-    (lambda (n a)
-        (iter-Nat n a (lambda (u) (-> a u)))))
-\end{minted}
-
-\subsubsection{UNat (unary operator on Nat)} \label{code:UNat}
-\begin{minted}{scheme}
-(claim UNat U)
-(define UNat (NaryOp 1 Nat))
-\end{minted}
-
-\subsubsection{BinNat (binary operator on Nat)} \label{code:BinNat}
-\begin{minted}{scheme}
-(claim BinNat U)
-(define BinNat (NaryOp 2 Nat))
-\end{minted}
-
-
-\subsection{Combinators}
-
-\subsubsection{K (const)} \label{code:K}
-\begin{minted}{scheme}
-(claim const
-    (Pi ((a U) (b U)) (-> a b a)))
-(define const
-    (lambda (a b) (lambda (x y) x)))
-\end{minted}
-
-\subsubsection{I (identity)} \label{code:I}
-\begin{minted}{scheme}
-(claim id 
-    (Pi ((a U)) (-> a a)))
-(define id
-    (lambda (a) (lambda (x) x)))
-\end{minted}
-
-\subsubsection{C (flip)} \label{code:C}
-\begin{minted}{scheme}
-(claim flip
-    (Pi ((a U) (b U) (c U)) (-> (-> a b c) (-> b a c))))
-(define flip
-    (lambda (a b c)
-        (lambda (f)
-            (lambda (x y) (f y x)))))
-\end{minted}
-
-\subsubsection{B (compose)} \label{code:B}
-\begin{minted}{scheme}
-(claim B
-    (Pi ((a U) (b U) (c U)) (-> (-> b c) (-> a b) (-> a c))))
-(define B
-    (lambda (a b c)
-        (lambda (f g)
-            (lambda (x) (f (g x))))))
-\end{minted}
-
-\subsubsection{B2 (compose unary with binary)} \label{code:B2}
-\begin{minted}{scheme}
-(claim B2
-    (Pi ((a U) (b U) (c U) (d U)) (-> (-> c d) (-> a b c) (-> a b d))))
-;TODO: is it possible to use the B2 = BBB construction?
-(define B2
-    (lambda (a b c d)
-        (lambda (f g)
-            (lambda (x y) (f (g x y))))))
-\end{minted}
-
-
-\subsection{Functional Tools}
-
-\subsubsection{iterate-n} \label{code:iterate-n}
-\begin{minted}{scheme}
-(claim iterate-n
-    (Pi ((a U)) (-> (-> a a) a Nat a)))
-(define iterate-n
-    (lambda (a)
-        (lambda (f s n)
-            (iter-Nat n s f))))
-\end{minted}
-
-
 \subsection{Arithmetic}
 
 \subsubsection{successor} \label{code:successor}
@@ -129,16 +42,28 @@
 (define ^ (lambda (n m) ((iterate-n Nat) (* n) 1 m)))
 \end{minted}
 
-\subsubsection{floor div} \label{code:floor}
+\subsubsection{equality} \label{code:equality}
 \begin{minted}{scheme}
+; output 1 when n = m and 0 otherwise
+(claim == BinNat)
+(define ==
+  (lambda (n m)
+    (- 1 (+ (- n m) (- m n)))))
+
+\subsubsection{floordiv} \label{code:floordiv}
+\begin{minted}{scheme}
+; the idea here is that floor((x + 1)/y) = floor(x/y) unless x + 1 is the next multiple of y
+; we know floor(x/y) * y will be the "previous" multiple of y
+; so if floor(x/y) * y + y = y(floor(x/y) + 1) = (x + 1), then x + 1 is the "next multiple"
+; so, we add 1 to floor(x/y) iff floor(x/y)*y + y = (x + 1)
 (claim // BinNat)
-(define //
-    (lambda (n m)
-        (cdr ((iterate-n (Pair Nat Nat)) 
-            (lambda (p)
-                (cons (- (car p) m) (+ (cdr p) (sgn (- (add1 (car p)) m))))) 
-            (cons n 0)
-            n))))
+(define // 
+    ((flip Nat Nat Nat)
+        (lambda (y x)
+            (rec-Nat x
+                0
+                (lambda (x-1 d) 
+                    (+ d (== (succ x-1) (+ y (* d y)))))))))
 \end{minted}
 
 \subsubsection{modulus} \label{code:modulus}
@@ -164,6 +89,7 @@
                 n))))
 \end{minted}
 
+\end{minted}
 
 \subsection{Miscellaneous programs}
 
