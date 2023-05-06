@@ -1,53 +1,65 @@
 #lang pie
 
 ;;;;;;;;;;;;;;;
-;@section types
+;@begin section Types
 ;;;;;;;;;;;;;;;
 
+;@begin code NaryOp
 (claim NaryOp (-> Nat U U))
 (define NaryOp
     (lambda (n a)
         (iter-Nat n a (lambda (u) (-> a u)))))
+;@end
 
+;@begin code UNat (unary operator on Nat)
 (claim UNat U)
 (define UNat (NaryOp 1 Nat))
+;@end
 
+;@begin code BinNat (binary operator on Nat)
 (claim BinNat U)
 (define BinNat (NaryOp 2 Nat))
+;@end
+
+;@end // section Types
 
 ;;;;;;;;;;;;;;;;;;;;;
-;@section Combinators
+;@begin section Combinators
 ;;;;;;;;;;;;;;;;;;;;;
 
-;@subsection K (const)
+;@begin code K (const)
 (claim const
     (Pi ((a U) (b U)) (-> a b a)))
 (define const
     (lambda (a b) (lambda (x y) x)))
+;@end
 
-;@subsection I (identity)
+;@begin code I (identity)
 (claim id 
     (Pi ((a U)) (-> a a)))
 (define id
     (lambda (a) (lambda (x) x)))
+;@end
 
-;@subsection C (flip)
+;@begin code C (flip)
 (claim flip
     (Pi ((a U) (b U) (c U)) (-> (-> a b c) (-> b a c))))
 (define flip
     (lambda (a b c)
         (lambda (f)
             (lambda (x y) (f y x)))))
+;@end
 
-;@subsection B (compose)
+;@begin code B (compose)
 (claim B
     (Pi ((a U) (b U) (c U)) (-> (-> b c) (-> a b) (-> a c))))
 (define B
     (lambda (a b c)
         (lambda (f g)
             (lambda (x) (f (g x))))))
+;@end
 
-;@subsection B2 (compose unary with binary)
+;@begin code B2 (compose unary with binary)
 (claim B2
     (Pi ((a U) (b U) (c U) (d U)) (-> (-> c d) (-> a b c) (-> a b d))))
 ;TODO: is it possible to use the B2 = BBB construction?
@@ -55,49 +67,65 @@
     (lambda (a b c d)
         (lambda (f g)
             (lambda (x y) (f (g x y))))))
+;@end
 
-;@subsection iterate-n
+;@end // section Combinators
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;@begin section Functional Tools
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;@begin code iterate-n
 (claim iterate-n
     (Pi ((a U)) (-> (-> a a) a Nat a)))
 (define iterate-n
     (lambda (a)
         (lambda (f s n)
             (iter-Nat n s f))))
+;@end
 
+;@end // section Functional Tools
 
 ;;;;;;;;;;;;;;;;;;;;
-;@section Arithmetic
+;@begin section Arithmetic
 ;;;;;;;;;;;;;;;;;;;;
 
-;@subsection successor
+;@begin code successor
 (claim succ UNat)
 (define succ (lambda (n) (add1 n)))
+;@end
 
-;@subsection predecessor
+;@begin code predecessor
 (claim pred UNat)
 (define pred (lambda (n) (which-Nat n zero (id Nat))))
+;@end
 
-;@subsection sgn (1 if n > 0, 0 otherwise)
+;@begin code sgn (1 if n > 0, 0 otherwise)
 (claim sgn UNat)
 (define sgn (lambda (n) (which-Nat n zero ((const Nat Nat) 1))))
+;@end
 
-;@subsection addition
+;@begin code addition
 (claim + BinNat)
 (define + ((iterate-n Nat) succ))
+;@end
 
-;@subsection subtraction
+;@begin code subtraction
 (claim - BinNat)
 (define - ((iterate-n Nat) pred))
+;@end
 
-;@subsection multiplication
+;@begin code multiplication
 (claim * BinNat)
 (define * (lambda (n) ((iterate-n Nat) (+ n) 0)))
+;@end
 
-;@subsection exponentiation
+;@begin code exponentiation
 (claim ^ BinNat)
 (define ^ (lambda (n m) ((iterate-n Nat) (* n) 1 m)))
+;@end
 
-;@subsection floor div
+;@begin code floor div
 (claim // BinNat)
 (define //
     (lambda (n m)
@@ -106,13 +134,15 @@
                 (cons (- (car p) m) (+ (cdr p) (sgn (- (add1 (car p)) m))))) 
             (cons n 0)
             n))))
+;@end
 
-;@subsection modulus
+;@begin code modulus
 (claim % BinNat)
 (define %
     (lambda (n m) (- n (* m (// n m)))))
+;@end
 
-;@subsection lo (get exponent of factor)
+;@begin code lo (get exponent of factor)
 (claim lo BinNat)
 (define lo
     (lambda (b n)
@@ -125,8 +155,15 @@
                      (car p) (cdr p)))
                 (cons n 0)
                 n))))
+;@end
 
-;@subsection helper for fib
+;@end // section Arithmetic
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;@begin section Miscellaneous programs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;@begin code Fibonacci
 (claim __fib-helper-g UNat)
 (define __fib-helper-g
     (lambda (n+1)
@@ -140,3 +177,6 @@
 
 (claim fib UNat)
 (define fib (lambda (n) (lo 2 (__fib-helper-g n))))
+;@end
+
+;@end // section Miscellaneous programs
