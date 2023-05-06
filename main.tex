@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{amsmath, amsthm, amssymb, amsfonts, mathtools}
 \usepackage{thmtools}
 \usepackage{graphicx}
 \usepackage{setspace}
@@ -12,6 +12,7 @@
 \usepackage{framed}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tcolorbox}
+\usepackage{minted}
 
 \hypersetup{
     colorlinks,
@@ -26,6 +27,10 @@
 
 \newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
 \newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\bb}[1]{\mathbb{#1}}
+\newcommand{\bN}{\bb{N}}
+
+\newcommand{\lo}{\mathrm{lo}}
 
 \declaretheoremstyle[name=Theorem,]{thmsty}
 \declaretheorem[style=thmsty,numberwithin=section]{theorem}
@@ -210,4 +215,65 @@ Other trivial things like the semantics of function application (substitution), 
     \item \(\eta\)-equivalence; \ttt{f} is the same function as \ttt{(\(\lambda\) (x) (f x))}.
     \item If \ttt{p} is a \ttt{(Pair X Y)} then \ttt{p} is the same \ttt{(Pair X Y)} as \ttt{(cons (car p) (cdr p))}.
 \end{itemize}
+\section{Eliminate All Natural Numbers!}
+\subsection{Summary}
+This chapter is all about two new eliminators for \ttt{Nat}, \ttt{iter-Nat} and \ttt{rec-Nat}.
+\\ \\
+These solve the main problem with \ttt{which-Nat}, which is that it only eliminates one constructor at a time. That is, if \ttt{n = (add1 k)}, then \ttt{which-Nat} will eliminate the singular \ttt{add1} but will not eliminate \ttt{k}. In contrast, \ttt{iter-Nat} and \ttt{rec-Nat} will eliminate all the way down to \ttt{zero}.
+\\ \\
+\ttt{iter-Nat} takes a natural number \(n\), an initial value \(s\) of type \(X\), and a unary function \(f : X \to X\), and returns \(f^n(s)\) where \(f^n\) is the \(n\)-fold composition.
+\\ \\
+\ttt{rec-Nat} takes a natural number \(n\), an initial value \(s\), and a binary function \(f : \mathbb{N} \times X \to X\) and returns \[
+    f(n - 1, f(n-2, f(\dots, f(0, s)\dots)))
+\]
+\subsection{Totality}
+A function is \textit{total} if it assigns a value to every possible argument. Totality is built into the ``typical" notion of functions from mathematics. In Pie, \textit{all functions are total.}
+\subsection{The \ttt{iter-Nat} eliminator}
+For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{step} a function from \ttt{X} to \ttt{X}, \[ E \coloneqq \ttt{(iter-Nat target base step)} \] is an \ttt{X}. If \ttt{target} is zero, then \(E\) is the same \ttt{X} as \ttt{base}. Otherwise, if \(E = \) \ttt{(add1 n)}, then \(E\) is the same \ttt{X} as \[
+    \ttt{(step (iter-Nat n base step))}
+\]
+Intuitively, \ttt{iter-Nat} iterates the function \ttt{step} \ttt{target} times on \ttt{base}.
+\subsection{The \ttt{rec-Nat} eliminator} \label{rec-nat-elim}
+For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{step} a binary function of \ttt{Nat} and \ttt{X} to \ttt{X}, \[ E \coloneqq \ttt{(rec-Nat target base step)} \] is an \ttt{X}. If \ttt{target} is zero, then \(E\) is the same \ttt{X} as \ttt{base}. Otherwise, if \(E = \) \ttt{(add1 n)}, then \(E\) is the same \ttt{X} as \[
+    \ttt{(step n (rec-Nat n base step))}
+\]
+\ttt{rec-Nat} achieves \href{https://en.wikipedia.org/wiki/Primitive_recursive_function}{primitive recursion} on the naturals. I don't really know what this means yet, but it looks cool!
+\subsection{Superfluence of \ttt{which-Nat} and \ttt{iter-Nat}}
+\ttt{rec-Nat} can be used to implement \ttt{which-Nat} and \ttt{iter-Nat} by using a function which ignores the second and first arguments respectively. That is, \[
+    \ttt{(which-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (n-1 \_) (f n-1)))}
+\]
+and \[
+    \ttt{(iter-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (\_ f-n-1) (f f-n-1)))}
+\]
+\subsection{Some notes on primitive recursion}
+As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves primitive recursion.
+\begin{itemize}
+    \item 
+        Primitive recursion \textbf{does not} yield every possible computable function. A cool counterexample is the \href{https://en.wikipedia.org/wiki/Ackermann_function}{Ackermann function} which is well-defined, total, and computable, but not primitive recursive. \textcolor{red}{Does this mean that the Ackermann function can not be defined in Pie? Does Pie have more constructs beyond \ttt{iter-Nat} capable of surpassing the computing power of primitive recursion?}
+    \item
+        An intuitive way of understanding the computing power of primitive recursion is via ``the computer language" definition. That is, primitive recursion has the same computing power as a programming language with arithmetic, conditionals, comparisons, and \textbf{bounded} loops.
+    \item
+        Clearly, \ttt{rec-Nat} allows us to define functions that depend only on their previous value. That is, if \(f : \mathbb{N} \to \mathbb{N}\) is a function such that \(f(n + 1)\) is defined in terms of \(f(n)\) only, then it is easy to implement this using \ttt{rec-Nat} (\textcolor{red}{Is this a sufficient condition for primitive recursion? Do there exist functions like this that are not primitive recursive?}) What if \(f\) depends on two or more previous values, such as the Fibonacci function? We can use something called \href{https://en.wikipedia.org/wiki/Course-of-values_recursion}{course of values recursion} to define these.
+    \item
+        As a concrete example of the above, here is how we might encode the function \(F : \bN \to \bN\) defined by \[
+            F(n) = \begin{cases}
+                        1 & n < 2 \\
+                        F(n - 1) + F(n - 2) & n \geq 2
+                   \end{cases}
+        \]
+        into a function \(g : \bN \to \bN\) so that \(g(n + 1)\) depends only on \(g(n)\). 
+        \\ \\
+        We define \(g(n) = 2^{F(n)}3^{F(n + 1)}\). Then, \(g(0) = 6\) and \begin{align*}
+            g(n + 1) &= 2^{F(n + 1)}3^{F(n + 2)} \\
+                     &= 2^{\lo(3, g(n))}3^{F(n + 1) + F(n)} \\
+                     &= 2^{\lo(3, g(n))}3^{F(n + 1)} 3^{F(n)} \\
+                     &= 2^{\lo(3, g(n))}3^{\lo(3, g(n))} 3^{\lo(2, g(n))}
+        \end{align*}
+        Here, the \(\lo(a, b)\) function gives the number of times \(b\) is divisible by \(a\). This function, as well as exponentiation and multiplication can be defined using primitive recursion (see \autoref{pie-code-appendix}), and so \(g\) can be defined using primitive recursion, and so \(F(n) = \lo(2, g(n))\) can be defined via primitive recursion, and hence the Fibonacci function is primitive recursive!  
+\end{itemize}
+
+\appendix
+\section{Some Cool Pie Code} \label{pie-code-appendix}
+I plan on making this cooler and easier to navigate eventually. For now, here is the raw code dump:
+\inputminted{scheme}{lib.pie}
 \end{document}
