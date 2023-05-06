@@ -42,8 +42,9 @@ class Section(Wrapper):
     
 class CodeSection(Wrapper):
     def wrap(self, s):
+        label = self.arg.strip().split(' ')[0]
         return (
-            f'\\subsubsection{{{self.arg.strip()}}}\n'
+            f'\\subsubsection{{{self.arg.strip()}}} \\label{{code:{label}}}\n'
             f'\\begin{{minted}}{{scheme}}\n'
             f'{s}'
             f'\\end{{minted}}\n'
