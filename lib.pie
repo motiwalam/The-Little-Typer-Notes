@@ -101,7 +101,8 @@
 (define pred (lambda (n) (which-Nat n zero (id Nat))))
 ;@end
 
-;@begin code sgn (1 if n > 0, 0 otherwise)
+;@begin code sgn
+; 1 if n > 0, 0 otherwise
 (claim sgn UNat)
 (define sgn (lambda (n) (which-Nat n zero ((const Nat Nat) 1))))
 ;@end
@@ -132,6 +133,7 @@
 (define ==
   (lambda (n m)
     (- 1 (+ (- n m) (- m n)))))
+;@end
 
 ;@begin code floordiv
 ; the idea here is that floor((x + 1)/y) = floor(x/y) unless x + 1 is the next multiple of y
