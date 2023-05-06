@@ -5,6 +5,7 @@
 ;;;;;;;;;;;;;;;
 
 ;@begin code NaryOp
+; creates the type of an n-ary operation over some type a
 (claim NaryOp (-> Nat U U))
 (define NaryOp
     (lambda (n a)
@@ -125,15 +126,26 @@
 (define ^ (lambda (n m) ((iterate-n Nat) (* n) 1 m)))
 ;@end
 
-;@begin code floor div
+;@begin code equality
+; output 1 when n = m and 0 otherwise
+(claim == BinNat)
+(define ==
+  (lambda (n m)
+    (- 1 (+ (- n m) (- m n)))))
+
+;@begin code floordiv
+; the idea here is that floor((x + 1)/y) = floor(x/y) unless x + 1 is the next multiple of y
+; we know floor(x/y) * y will be the "previous" multiple of y
+; so if floor(x/y) * y + y = y(floor(x/y) + 1) = (x + 1), then x + 1 is the "next multiple"
+; so, we add 1 to floor(x/y) iff floor(x/y)*y + y = (x + 1)
 (claim // BinNat)
-(define //
-    (lambda (n m)
-        (cdr ((iterate-n (Pair Nat Nat)) 
-            (lambda (p)
-                (cons (- (car p) m) (+ (cdr p) (sgn (- (add1 (car p)) m))))) 
-            (cons n 0)
-            n))))
+(define // 
+    ((flip Nat Nat Nat)
+        (lambda (y x)
+            (rec-Nat x
+                0
+                (lambda (x-1 d) 
+                    (+ d (== (succ x-1) (+ y (* d y)))))))))
 ;@end
 
 ;@begin code modulus
