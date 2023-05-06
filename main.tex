@@ -227,7 +227,7 @@ These solve the main problem with \ttt{which-Nat}, which is that it only elimina
     f(n - 1, f(n-2, f(\dots, f(0, s)\dots)))
 \]
 \subsection{Totality}
-A function is \textit{total} if it assigns a value to every possible argument. Totality is built into the ``typical" notion of functions from mathematics. In Pie, \textit{all functions are total.}
+A function is \textit{total} if it assigns a value to every possible argument. Totality is built into the ``typical" notion of functions from mathematics, as a function \(f : A \to B\) is not a function if \(f(a)\) is not defined for some element \(a \in A\). In Pie, \textit{all functions are total.}
 \subsection{The \ttt{iter-Nat} eliminator}
 For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{step} a function from \ttt{X} to \ttt{X}, \[ E \coloneqq \ttt{(iter-Nat target base step)} \] is an \ttt{X}. If \ttt{target} is zero, then \(E\) is the same \ttt{X} as \ttt{base}. Otherwise, if \(E = \) \ttt{(add1 n)}, then \(E\) is the same \ttt{X} as \[
     \ttt{(step (iter-Nat n base step))}
@@ -274,6 +274,7 @@ As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves pr
 
 \appendix
 \section{Some Cool Pie Code} \label{pie-code-appendix}
-I plan on making this cooler and easier to navigate eventually. For now, here is the raw code dump:
-\inputminted{scheme}{lib.pie}
+% I plan on making this cooler and easier to navigate eventually. For now, here is the raw code dump from \href{https://github.com/thechosenreader/The-Little-Typer-Notes}{here}:
+% \inputminted{scheme}{lib.pie}
+\
 \end{document}
