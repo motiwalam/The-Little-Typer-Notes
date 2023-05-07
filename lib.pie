@@ -29,9 +29,9 @@
 
 ;@end // section Types
 
-;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;@begin section Combinators
-;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;@begin code K (const)
 (claim const
@@ -198,15 +198,15 @@
 ;@end
 
 ;@begin code divides
-(claim divides BinNat)
-(define divides
+(claim divides? BinNat)
+(define divides?
     (lambda (n m) (== 0 (% m n))))
 ;@end
 
 ;@begin code lo (get exponent of factor)
 (claim lo BinNat)
 (define lo
-    (lambda (b n) (mu n (lambda (z) (cosgn (divides (^ b (succ z)) n))))))
+    (lambda (b n) (mu n (lambda (z) (cosgn (divides? (^ b (succ z)) n))))))
 ;@end
 
 ;@begin code sum
@@ -277,12 +277,12 @@
 
 ;@begin code factorial
 (claim ! UNat)
-(define ! (lambda (n) (prod succ (- n 1))))
+(define ! (lambda (n) (prod succ (pred n))))
 ;@end
 
 ;@begin code prime?
 (claim prime? UNat)
-(define prime? (lambda (p) (== 2 (sum (flip Nat Nat Nat divides p) p))))
+(define prime? (lambda (p) (== 2 (sum (flip Nat Nat Nat divides? p) p))))
 ;@end
 
 ;@begin code nth-prime

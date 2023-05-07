@@ -1,3 +1,5 @@
+This code listing was generated automatically from \href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\ttt{lib.pie} in this repository}.
+\\ \\
 
 \subsection{Types}
 
@@ -210,8 +212,8 @@
 
 \subsubsection{divides} \label{code:divides}
 \begin{minted}{scheme}
-(claim divides BinNat)
-(define divides
+(claim divides? BinNat)
+(define divides?
     (lambda (n m) (== 0 (% m n))))
 \end{minted}
 
@@ -219,7 +221,7 @@
 \begin{minted}{scheme}
 (claim lo BinNat)
 (define lo
-    (lambda (b n) (mu n (lambda (z) (cosgn (divides (^ b (succ z)) n))))))
+    (lambda (b n) (mu n (lambda (z) (cosgn (divides? (^ b (succ z)) n))))))
 \end{minted}
 
 \subsubsection{sum} \label{code:sum}
@@ -292,13 +294,13 @@
 \subsubsection{factorial} \label{code:factorial}
 \begin{minted}{scheme}
 (claim ! UNat)
-(define ! (lambda (n) (prod succ (- n 1))))
+(define ! (lambda (n) (prod succ (pred n))))
 \end{minted}
 
 \subsubsection{prime?} \label{code:prime?}
 \begin{minted}{scheme}
 (claim prime? UNat)
-(define prime? (lambda (p) (== 2 (sum (flip Nat Nat Nat divides p) p))))
+(define prime? (lambda (p) (== 2 (sum (flip Nat Nat Nat divides? p) p))))
 \end{minted}
 
 \subsubsection{nth-prime} \label{code:nth-prime}
