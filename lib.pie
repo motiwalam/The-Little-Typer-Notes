@@ -165,6 +165,9 @@
 (claim == BinNat)
 (define ==
   (lambda (n m)
+    ; (n - m) + (m - n) = 0 if n = m
+    ; and > 0 otherwise, hence subtracting
+    ; it from 1 returns 1 iff n = m
     (- 1 (+ (- n m) (- m n)))))
 ;@end
 
@@ -213,6 +216,8 @@
 ;@end
 
 ;@begin code lo (get exponent of factor)
+; lo is the b-adic valuation of n
+; it is the smallest integer z such that b^(z + 1) does not divide n
 (claim lo BinNat)
 (define lo
     (lambda (b n) (mu n (lambda (z) (cosgn (divides? (^ b (succ z)) n))))))
@@ -220,6 +225,7 @@
 
 ;@begin code sum
 ; sum a function f from 0 to n
+; i.e, f(0) + f(1) + ... + f(n)
 (claim sum (-> UNat Nat Nat))
 (define sum
     (lambda (f n)
@@ -228,6 +234,7 @@
 
 ;@begin code prod
 ; multiply a function f from 0 to n
+; i.e, f(0) * f(1) * ... * f(n)
 (claim prod (-> UNat Nat Nat))
 (define prod
     (lambda (f n)
@@ -269,6 +276,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;@begin code Fibonacci
+; we want this function to satisfy
+; g(n) = 2^{fib(n)}3^{fib(n + 1)}
+; by using lo, we can solve for g(n + 1) in terms of g(n)
+; then, fib(n) = lo(2, g(n))
 (claim __fib-helper-g UNat)
 (define __fib-helper-g
     (lambda (n+1)
@@ -291,11 +302,15 @@
 
 ;@begin code prime?
 (claim prime? UNat)
+; p is prime iff p has only 2 divisors, 1 and itself
 (define prime? (lambda (p) (== 2 (sum (flip Nat Nat Nat divides? p) p))))
 ;@end
 
 ;@begin code nth-prime
 (claim nth-prime UNat)
+; given the nth prime, we know the (n + 1)th prime
+; is less than pr equal to the factorial of the nth prime + 1
+; so we can use mu
 (define nth-prime
     (lambda (n+1)
         (rec-Nat
