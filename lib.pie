@@ -126,9 +126,11 @@
 ;@end
 
 ;@begin code mu (bounded minimization)
+; the smallest natural z <= x satisfying p(z), or x if no such z exists
 (claim mu (-> Nat Predicate Nat))
 (define mu
     (lambda (x p)
+        ; start at 0 and increment iff p evaluates to false (i.e 0)
         (iter-Nat x 0 (lambda (z) ((iterate-n Nat) succ z (cosgn (p z)))))))
 ;@end
 
