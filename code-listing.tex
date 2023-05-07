@@ -16,6 +16,12 @@
 (define UNat (NaryOp 1 Nat))
 \end{minted}
 
+\subsubsection{Predicate (same as UNat)} \label{code:Predicate}
+\begin{minted}{scheme}
+(claim Predicate U)
+(define Predicate UNat)
+\end{minted}
+
 \subsubsection{BinNat (binary operator on Nat)} \label{code:BinNat}
 \begin{minted}{scheme}
 (claim BinNat U)
@@ -86,7 +92,7 @@
 \end{minted}
 
 
-\subsection{Arithmetic}
+\subsection{Utilities}
 
 \subsubsection{successor} \label{code:successor}
 \begin{minted}{scheme}
@@ -106,6 +112,24 @@
 (claim sgn UNat)
 (define sgn (lambda (n) (which-Nat n zero ((const Nat Nat) 1))))
 \end{minted}
+
+\subsubsection{cosgn} \label{code:cosgn}
+\begin{minted}{scheme}
+; 0 if n > 0, 1 otherwise
+(claim cosgn UNat)
+(define cosgn (lambda (n) (which-Nat n 1 ((const Nat Nat) 0))))
+\end{minted}
+
+\subsubsection{mu (bounded minimization)} \label{code:mu}
+\begin{minted}{scheme}
+(claim mu (-> Nat Predicate Nat))
+(define mu
+    (lambda (x p)
+        (iter-Nat x 0 (lambda (z) ((iterate-n Nat) succ z (cosgn (p z)))))))
+\end{minted}
+
+
+\subsection{Arithmetic \& Comparisons}
 
 \subsubsection{addition} \label{code:addition}
 \begin{minted}{scheme}
@@ -140,20 +164,41 @@
     (- 1 (+ (- n m) (- m n)))))
 \end{minted}
 
+\subsubsection{gt} \label{code:gt}
+\begin{minted}{scheme}
+(claim > BinNat)
+(define >
+    (lambda (n m) (sgn (- n m))))
+\end{minted}
+
+\subsubsection{lt} \label{code:lt}
+\begin{minted}{scheme}
+(claim < BinNat)
+(define <
+    (lambda (n m) (sgn (- m n))))
+\end{minted}
+
+\subsubsection{gte} \label{code:gte}
+\begin{minted}{scheme}
+(claim >= BinNat)
+(define >=
+    (lambda (n m) (cosgn (< n m))))
+\end{minted}
+
+\subsubsection{lte} \label{code:lte}
+\begin{minted}{scheme}
+(claim <= BinNat)
+(define <=
+    (lambda (n m) (cosgn (> n m))))
+\end{minted}
+
 \subsubsection{floordiv} \label{code:floordiv}
 \begin{minted}{scheme}
-; the idea here is that floor((x + 1)/y) = floor(x/y) unless x + 1 is the next multiple of y
-; we know floor(x/y) * y will be the "previous" multiple of y
-; so if floor(x/y) * y + y = y(floor(x/y) + 1) = (x + 1), then x + 1 is the "next multiple"
-; so, we add 1 to floor(x/y) iff floor(x/y)*y + y = (x + 1)
+; floor(n/m) is the smallest number z such that (z + 1)m > n
 (claim // BinNat)
-(define // 
-    ((flip Nat Nat Nat)
-        (lambda (y x)
-            (rec-Nat x
-                0
-                (lambda (x-1 d) 
-                    (+ d (== (succ x-1) (+ y (* d y)))))))))
+(define //
+    (lambda (n m)
+        (mu n (lambda (z) (> (* (succ z) m) n)))))
 \end{minted}
 
 \subsubsection{modulus} \label{code:modulus}
@@ -163,20 +208,65 @@
     (lambda (n m) (- n (* m (// n m)))))
 \end{minted}
 
+\subsubsection{divides} \label{code:divides}
+\begin{minted}{scheme}
+(claim divides BinNat)
+(define divides
+    (lambda (n m) (== 0 (% m n))))
+\end{minted}
+
 \subsubsection{lo (get exponent of factor)} \label{code:lo}
 \begin{minted}{scheme}
 (claim lo BinNat)
 (define lo
-    (lambda (b n)
-        (cdr ((iterate-n (Pair Nat Nat))
-                (lambda (p)
-                    ((the (-> Nat Nat (Pair Nat Nat)) (lambda (i j) 
-                        ((the (-> Nat (Pair Nat Nat)) (lambda (div?) 
-                            (cons (* div? (// i b)) (+ j (* (sgn i) div?)))))
-                         (- 1 (sgn (% i b))))))
-                     (car p) (cdr p)))
-                (cons n 0)
-                n))))
+    (lambda (b n) (mu n (lambda (z) (cosgn (divides (^ b (succ z)) n))))))
+\end{minted}
+
+\subsubsection{sum} \label{code:sum}
+\begin{minted}{scheme}
+; sum a function f from 0 to n
+(claim sum (-> UNat Nat Nat))
+(define sum
+    (lambda (f n)
+        (rec-Nat n (f 0) (lambda (n-1 s) (+ s (f (succ n-1)))))))
+\end{minted}
+
+\subsubsection{prod} \label{code:prod}
+\begin{minted}{scheme}
+; multiply a function f from 0 to n
+(claim prod (-> UNat Nat Nat))
+(define prod
+    (lambda (f n)
+        (rec-Nat n (f 0) (lambda (n-1 s) (* s (f (succ n-1)))))))
+\end{minted}
+
+
+\subsection{logic}
+
+\subsubsection{not} \label{code:not}
+\begin{minted}{scheme}
+(claim not UNat)
+(define not cosgn)
+\end{minted}
+
+\subsubsection{and} \label{code:and}
+\begin{minted}{scheme}
+(claim and BinNat)
+(define and *)
+\end{minted}
+
+\subsubsection{or} \label{code:or}
+\begin{minted}{scheme}
+(claim or BinNat)
+(define or
+    (lambda (p q) (sgn (+ p q))))
+\end{minted}
+
+\subsubsection{xor} \label{code:xor}
+\begin{minted}{scheme}
+(claim xor BinNat)
+(define xor
+    (lambda (p q) (== 1 (+ p q))))
 \end{minted}
 
 
@@ -197,6 +287,29 @@
 
 (claim fib UNat)
 (define fib (lambda (n) (lo 2 (__fib-helper-g n))))
+\end{minted}
+
+\subsubsection{factorial} \label{code:factorial}
+\begin{minted}{scheme}
+(claim ! UNat)
+(define ! (lambda (n) (prod succ (- n 1))))
+\end{minted}
+
+\subsubsection{prime?} \label{code:prime?}
+\begin{minted}{scheme}
+(claim prime? UNat)
+(define prime? (lambda (p) (== 2 (sum (flip Nat Nat Nat divides p) p))))
+\end{minted}
+
+\subsubsection{nth-prime} \label{code:nth-prime}
+\begin{minted}{scheme}
+(claim nth-prime UNat)
+(define nth-prime
+    (lambda (n+1)
+        (rec-Nat
+            n+1
+            2
+            (lambda (n pn) (mu (succ (! pn)) (lambda (z) (and (prime? z) (> z pn))))))))
 \end{minted}
 
 
