@@ -287,6 +287,45 @@ This code listing was generated automatically from \href{https://github.com/thec
 \end{minted}
 
 
+\subsection{Lists}
+
+\subsubsection{snoc} \label{code:snoc}
+\begin{minted}{scheme}
+(claim snoc (Pi ((a U)) (-> (List a) a (List a))))
+(define snoc
+    (lambda (a)
+        (lambda (lst e)
+            (rec-List
+                lst
+                (:: e nil)
+                (lambda (x xs snoc-xs) (:: x snoc-xs))))))
+\end{minted}
+
+\subsubsection{length} \label{code:length}
+\begin{minted}{scheme}
+(claim length (Pi ((a U)) (-> (List a) Nat)))
+(define length
+    (lambda (a)
+        (lambda (lst)
+            (rec-List
+                lst
+                0
+                (lambda (e es les) (succ les))))))
+\end{minted}
+
+\subsubsection{concat} \label{code:concat}
+\begin{minted}{scheme}
+(claim concat (Pi ((a U)) (NaryOp 2 (List a))))
+(define concat
+    (lambda (a)
+        (lambda (l1 l2)
+            (rec-List
+                l1
+                l2
+                (lambda (x xs concat-xs) (:: x concat-xs))))))
+\end{minted}
+
+
 \subsection{Miscellaneous programs}
 
 \subsubsection{Fibonacci} \label{code:Fibonacci}

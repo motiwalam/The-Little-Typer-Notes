@@ -271,6 +271,45 @@
 
 ;@end // section logic
 
+;;;;;;;;;;;;;;;;;;;;;
+;@begin section Lists
+;;;;;;;;;;;;;;;;;;;;;
+
+;@begin code snoc
+(claim snoc (Pi ((a U)) (-> (List a) a (List a))))
+(define snoc
+    (lambda (a)
+        (lambda (lst e)
+            (rec-List
+                lst
+                (:: e nil)
+                (lambda (x xs snoc-xs) (:: x snoc-xs))))))
+;@end
+
+;@begin code length
+(claim length (Pi ((a U)) (-> (List a) Nat)))
+(define length
+    (lambda (a)
+        (lambda (lst)
+            (rec-List
+                lst
+                0
+                (lambda (e es les) (succ les))))))
+;@end
+
+;@begin code concat
+(claim concat (Pi ((a U)) (NaryOp 2 (List a))))
+(define concat
+    (lambda (a)
+        (lambda (l1 l2)
+            (rec-List
+                l1
+                l2
+                (lambda (x xs concat-xs) (:: x concat-xs))))))
+;@end
+
+;@end // section Lists
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;@begin section Miscellaneous programs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
