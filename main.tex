@@ -289,7 +289,21 @@ The \(\to\) type constructor is syntax sugar for the \(\Pi\) type constructor. T
     \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
 \]
 The power of the \(\Pi\) operator comes from the fact that the \ttt{R} type is allowed to depend on the \ttt{x}\(_i\)'s, so if \ttt{X}\(_i\) is \(\mathcal{U}\), then \ttt{R} can denote a variable type.
-
+\section{Lists, Lists, and More Lists}
+\subsection{Summary}
+This chapter introduces the \ttt{List} type, which behaves about how you'd expect. There isn't really anything new or surprising here.
+\subsection{The \ttt{List} Type}
+Given a type \ttt{E}, \ttt{(List E)} describes a new type.
+\subsection{The \ttt{nil} and \ttt{::} constructors}
+The \ttt{List} type has two constructors, \ttt{nil} and \ttt{::}; the first constructs the empty list whereas the second tacks on a new element ``to the front" of an existing list.
+\subsection{The \ttt{rec-List} eliminator}
+Given a list \((x_1, \dots, x_n)\) of type \ttt{(List A)}, some value \(s\) of type \(X\), and a function \(f : \ttt{A} \times \ttt{(List A)} \times X \to X\), the \ttt{rec-List} eliminator returns \[
+    f(x_1, (x_2, \dots, x_n), f(x_2, (x_3, \dots, x_n), f(\dots, f(x_n, (), s) \dots)))
+\]
+In other words, let \ttt{target} be a \ttt{(List E)}, \ttt{base} be an \ttt{X}, and \ttt{step} be a \ttt{(\(\to\) E (List E) X X)}. If \ttt{target} is the same as \ttt{nil}, then \ttt{(rec-List target base step)} is the same \ttt{X} as \ttt{base}. If \ttt{target} is \ttt{(:: e es)}, then \ttt{(rec-List target base step)} is the same \ttt{X} as \[
+    \ttt{(step e es (rec-List es base step))}
+\]
+\ttt{rec-List} is primitive recursion on lists. 
 \appendix
 \section{Some Cool Pie Code} \label{pie-code-appendix}
 \input{code-listing}
