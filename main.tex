@@ -226,7 +226,8 @@ These solve the main problem with \ttt{which-Nat}, which is that it only elimina
 \ttt{rec-Nat} takes a natural number \(n\), an initial value \(s\), and a binary function \(f : \mathbb{N} \times X \to X\) and returns \[
     f(n - 1, f(n-2, f(\dots, f(0, s)\dots)))
 \]
-\subsection{Totality}
+The chapter ends with a note on currying: all functions in Pie are functions of one variable and those functions which look multivariable are in fact just single variable functions whose return type is a new function.
+\subsection{Totality} 
 A function is \textit{total} if it assigns a value to every possible argument. Totality is built into the ``typical" notion of functions from mathematics, as a function \(f : A \to B\) is not a function if \(f(a)\) is not defined for some element \(a \in A\). In Pie, \textit{all functions are total.}
 \subsection{The \ttt{iter-Nat} eliminator}
 For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{step} a function from \ttt{X} to \ttt{X}, \[ E \coloneqq \ttt{(iter-Nat target base step)} \] is an \ttt{X}. If \ttt{target} is zero, then \(E\) is the same \ttt{X} as \ttt{base}. Otherwise, if \(E = \) \ttt{(add1 n)}, then \(E\) is the same \ttt{X} as \[
@@ -273,9 +274,21 @@ As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves pr
 \end{itemize}
 \section{Easy as Pie}
 \subsection{Summary}
+This chapter is all about the \(\Pi\) type constructor, which allows us to abstract functions over types. With the \(\Pi\) type constructor, we can define functions whose return type depends on the types of its arguments. 
 \subsection{The \(\Pi\) Operator}
+The \(\Pi\) constructor has the form \[
+    \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
+\]
+where each \(\ttt{x}_i\) is an identifier, \(\ttt{X}_i\) is a type, and \ttt{R} is an expression describing a type, possible using the identifiers \(\ttt{x}_i\) (where \(\ttt{x}_i\) represents a value of type \(\ttt{X}_i\)).
+\\ \\
+A value of type \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)} is a function which takes \(n\) arguments, where the \(i\)'th argument is of type \(\ttt{X}_i\) and produces a result of type \ttt{R}.
 \subsection{Superfluence of \(\to\) with respect to \(\Pi\)}
-
+The \(\to\) type constructor is syntax sugar for the \(\Pi\) type constructor. The type \[
+    \ttt{(\(\to\) X\(_1\) ... X\(_n\) R)}
+\] is equivalent to the type \[
+    \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
+\]
+The power of the \(\Pi\) operator comes from the fact that the \ttt{R} type is allowed to depend on the \ttt{x}\(_i\)'s, so if \ttt{X}\(_i\) is \(\mathcal{U}\), then \ttt{R} can denote a variable type.
 \appendix
 \section{Some Cool Pie Code} \label{pie-code-appendix}
 \input{code-listing}
