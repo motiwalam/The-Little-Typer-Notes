@@ -75,12 +75,12 @@ This code listing was generated automatically from \href{https://github.com/thec
             (lambda (x) (f (g x))))))
 \end{minted}
 
-\subsubsection{B2 (compose unary with binary)} \label{code:B2}
+\subsubsection{B1 (compose unary with binary)} \label{code:B1}
 \begin{minted}{scheme}
-(claim B2
+(claim B1
     (Pi ((a U) (b U) (c U) (d U)) (-> (-> c d) (-> a b c) (-> a b d))))
-;TODO: is it possible to use the B2 = BBB construction?
-(define B2
+;TODO: is it possible to use the B1 = BBB construction?
+(define B1
     (lambda (a b c d)
         (lambda (f g)
             (lambda (x y) (f (g x y))))))
