@@ -292,7 +292,10 @@
         (rec-Nat
             n+1
             2
-            (lambda (n pn) (mu (succ (! pn)) (lambda (z) (and (prime? z) (> z pn))))))))
+            (lambda (n pn) 
+                (mu (succ (! pn)) 
+                    (lambda (z) 
+                        (and (prime? z) (> z pn))))))))
 ;@end
 
 ;@end // section Miscellaneous programs

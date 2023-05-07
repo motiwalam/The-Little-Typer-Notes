@@ -309,7 +309,10 @@ This code listing was generated automatically from \href{https://github.com/thec
         (rec-Nat
             n+1
             2
-            (lambda (n pn) (mu (succ (! pn)) (lambda (z) (and (prime? z) (> z pn))))))))
+            (lambda (n pn) 
+                (mu (succ (! pn)) 
+                    (lambda (z) 
+                        (and (prime? z) (> z pn))))))))
 \end{minted}
 
 
