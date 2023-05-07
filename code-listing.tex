@@ -327,7 +327,7 @@ This code listing was generated automatically from \href{https://github.com/thec
 \begin{minted}{scheme}
 (claim nth-prime UNat)
 ; given the nth prime, we know the (n + 1)th prime
-; is less than pr equal to the factorial of the nth prime + 1
+; is less than or equal to the factorial of the nth prime + 1
 ; so we can use mu
 (define nth-prime
     (lambda (n+1)
