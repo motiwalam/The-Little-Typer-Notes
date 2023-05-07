@@ -33,6 +33,13 @@
 ;@begin section Combinators
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;@begin code S (substitution)
+(claim S
+    (Pi ((a U) (b U) (c U)) (-> (-> a b c) (-> a b) a c)))
+(define S
+    (lambda (a b c) (lambda (x y z) (x z (y z)))))
+;@end
+
 ;@begin code K (const)
 (claim const
     (Pi ((a U) (b U)) (-> a b a)))

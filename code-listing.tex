@@ -31,6 +31,14 @@ This code listing was generated automatically from \href{https://github.com/thec
 
 \subsection{Combinators}
 
+\subsubsection{S (substitution)} \label{code:S}
+\begin{minted}{scheme}
+(claim S
+    (Pi ((a U) (b U) (c U)) (-> (-> a b c) (-> a b) a c)))
+(define S
+    (lambda (a b c) (lambda (x y z) (x z (y z)))))
+\end{minted}
+
 \subsubsection{K (const)} \label{code:K}
 \begin{minted}{scheme}
 (claim const
