@@ -238,7 +238,7 @@ For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{ste
     \ttt{(step n (rec-Nat n base step))}
 \]
 \ttt{rec-Nat} achieves \href{https://en.wikipedia.org/wiki/Primitive_recursive_function}{primitive recursion} on the naturals. I don't really know what this means yet, but it looks cool!
-\subsection{Superfluence of \ttt{which-Nat} and \ttt{iter-Nat}}
+\subsection{Superfluence of \ttt{which-Nat} and \ttt{iter-Nat} with respect to \ttt{rec-Nat}}
 \ttt{rec-Nat} can be used to implement \ttt{which-Nat} and \ttt{iter-Nat} by using a function which ignores the second and first arguments respectively. That is, \[
     \ttt{(which-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (n-1 \_) (f n-1)))}
 \]
@@ -271,6 +271,10 @@ As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves pr
         \end{align*}
         Here, the \(\lo(a, b)\) function gives the number of times \(b\) is divisible by \(a\). \hyperref[code:lo]{This function}, as well as \hyperref[code:exponentiation]{exponentiation} and \hyperref[code:multiplication]{multiplication} can be defined using primitive recursion, and so \(g\) can be defined using primitive recursion, and so \(F(n) = \lo(2, g(n))\) can be \hyperref[code:Fibonacci]{defined via primitive recursion}, and hence the Fibonacci function is primitive recursive!  
 \end{itemize}
+\section{Easy as Pie}
+\subsection{Summary}
+\subsection{The \(\Pi\) Operator}
+\subsection{Superfluence of \(\to\) with respect to \(\Pi\)}
 
 \appendix
 \section{Some Cool Pie Code} \label{pie-code-appendix}
