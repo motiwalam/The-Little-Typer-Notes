@@ -34,7 +34,12 @@ class Wrapper(Container):
 
 class Fragment(Wrapper):
     def wrap(self, s):
-        return s
+        prelude = (
+            "This code listing was generated automatically from "
+            "\\href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\\ttt{lib.pie} in this repository}."
+            "\n\\\\ \\\\\n"
+        )
+        return prelude + s
     
 class Section(Wrapper):
     def wrap(self, s):
