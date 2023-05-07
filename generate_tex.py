@@ -37,7 +37,6 @@ class Fragment(Wrapper):
         prelude = (
             "This code listing was generated automatically from "
             "\\href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\\ttt{lib.pie} in this repository}."
-            "\n\\\\ \\\\\n"
         )
         return prelude + s
     
