@@ -289,7 +289,13 @@ This code listing was generated automatically from \href{https://github.com/thec
 
 \subsection{Lists}
 
-\subsubsection{snoc} \label{code:snoc}
+\subsubsection{prepend (:: or cons)} \label{code:prepend}
+\begin{minted}{scheme}
+(claim prepend (Pi ((a U)) (-> a (List a) (List a))))
+(define prepend (lambda (a x xs) (:: x xs)))
+\end{minted}
+
+\subsubsection{snoc (flip append)} \label{code:snoc}
 \begin{minted}{scheme}
 (claim snoc (Pi ((a U)) (-> (List a) a (List a))))
 (define snoc
@@ -299,7 +305,11 @@ This code listing was generated automatically from \href{https://github.com/thec
                 lst
                 (:: e nil)
                 (lambda (x xs snoc-xs) (:: x snoc-xs))))))
+
+(claim append (Pi ((a U)) (-> a (List a) (List a))))
+(define append (lambda (a) (flip (List a) a (List a) (snoc a))))
 \end{minted}
+
 
 \subsubsection{length} \label{code:length}
 \begin{minted}{scheme}
@@ -353,7 +363,7 @@ This code listing was generated automatically from \href{https://github.com/thec
     (lambda (a p lst)
         (rec-List
             lst
-            nil
+            (the (List a) nil)
             (lambda (x xs filter-xs)
                 (which-Nat (p x) filter-xs (lambda (n) (:: x filter-xs)))))))
 \end{minted}
@@ -373,7 +383,14 @@ This code listing was generated automatically from \href{https://github.com/thec
 \begin{minted}{scheme}
 (claim foldl (Pi ((a U) (b U)) (-> (-> b a b) b (List a) b)))
 (define foldl
-    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse l))))
+    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse a l))))
+\end{minted}
+
+\subsubsection{repeat} \label{code:repeat}
+\begin{minted}{scheme}
+(claim repeat (Pi ((a U)) (-> Nat a (List a))))
+(define repeat
+    (lambda (a k x) (iterate-n (List a) (prepend a x) (the (List a) nil) k)))
 \end{minted}
 
 

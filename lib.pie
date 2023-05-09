@@ -275,7 +275,12 @@
 ;@begin section Lists
 ;;;;;;;;;;;;;;;;;;;;;
 
-;@begin code snoc
+;@begin code prepend (:: or cons)
+(claim prepend (Pi ((a U)) (-> a (List a) (List a))))
+(define prepend (lambda (a x xs) (:: x xs)))
+;@end
+
+;@begin code snoc (flip append)
 (claim snoc (Pi ((a U)) (-> (List a) a (List a))))
 (define snoc
     (lambda (a)
@@ -284,7 +289,11 @@
                 lst
                 (:: e nil)
                 (lambda (x xs snoc-xs) (:: x snoc-xs))))))
+
+(claim append (Pi ((a U)) (-> a (List a) (List a))))
+(define append (lambda (a) (flip (List a) a (List a) (snoc a))))
 ;@end
+
 
 ;@begin code length
 (claim length (Pi ((a U)) (-> (List a) Nat)))
@@ -333,7 +342,7 @@
     (lambda (a p lst)
         (rec-List
             lst
-            nil
+            (the (List a) nil)
             (lambda (x xs filter-xs)
                 (which-Nat (p x) filter-xs (lambda (n) (:: x filter-xs)))))))
 ;@end
@@ -351,7 +360,13 @@
 ;@begin code foldl
 (claim foldl (Pi ((a U) (b U)) (-> (-> b a b) b (List a) b)))
 (define foldl
-    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse l))))
+    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse a l))))
+;@end
+
+;@begin code repeat
+(claim repeat (Pi ((a U)) (-> Nat a (List a))))
+(define repeat
+    (lambda (a k x) (iterate-n (List a) (prepend a x) (the (List a) nil) k)))
 ;@end
 
 ;@end // section Lists
