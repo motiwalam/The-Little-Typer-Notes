@@ -340,7 +340,7 @@ Another cool (but rather silly) use case is defining \ttt{length}, which we can 
 (claim length (Pi ((a U) (k Nat)) (-> (Vec a k) Nat)))
 (define length (lambda (a k v) k))
 \end{minted}
-Similarly, we can define more expressive types for familiar list functions such as \ttt{map} and \ttt{reverse} which would express the fact that these do not affect the length of the input list, or \ttt{repeat}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
+Similarly, we can define more expressive types for familiar list functions such as \hyperref[code:map]{\ttt{map}} and \hyperref[code:reverse]{\ttt{reverse}} which would express the fact that these do not affect the length of the input list, or \ttt{repeat}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
 \\ \\
 Unfortunately, we can't implement a lot of these quite yet, since they require more power than just \ttt{head} or \ttt{tail}. 
 \appendix
