@@ -4,7 +4,7 @@
 \usepackage{thmtools}
 \usepackage{graphicx}
 \usepackage{setspace}
-\usepackage{geometry}
+\usepackage[margin=0.7in]{geometry}
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
@@ -13,6 +13,9 @@
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tcolorbox}
 \usepackage{minted}
+\usepackage{etoc}
+\usepackage{etoolbox}
+\AtBeginEnvironment{appendix}{\etocsettocdepth.toc{section}\etocignoretoctocdepth}
 
 \hypersetup{
     colorlinks,
@@ -325,7 +328,7 @@ Clearly, \ttt{head} and \ttt{tail} are only meaningful when applied to non-empty
 \]
 The type of \ttt{head} depends on a natural number \(k\); given a \(k\), \ttt{head} accepts a vector of length \(k + 1\), thereby guaranteeing the existence of at least one element in the vector and thus making \ttt{head} total. Similarly for \ttt{tail}.
 \subsection{Some initial impressions}
-Dependent types give us \textit{a lot} more power to describe programs. Suddenly, we can Pie a lot more ``dynamic". For example, consider the following Python program:
+Dependent types give us \textit{a lot} more power to describe programs. Suddenly, we can make Pie a lot more ``dynamic". For example, consider the following Python program:
 \begin{minted}{python}
     apply = lambda f, args: f(*args)
 \end{minted}
@@ -335,15 +338,20 @@ It is clear what \ttt{apply} is \textit{supposed} to do: take a function and som
 \\ \\
 Of course, the above type doesn't fully describe the type of our Python program \ttt{apply}, but it's pretty good!
 \\ \\
-Another cool (but rather silly) use case is defining \ttt{length}, which we can simply define as:
+Another cool (but admittedly silly) use case is defining \ttt{length}, which we can simply define as:
 \begin{minted}{scheme}
 (claim length (Pi ((a U) (k Nat)) (-> (Vec a k) Nat)))
 (define length (lambda (a k v) k))
 \end{minted}
-Similarly, we can define more expressive types for familiar list functions such as \hyperref[code:map]{\ttt{map}} and \hyperref[code:reverse]{\ttt{reverse}} which would express the fact that these do not affect the length of the input list, or \ttt{repeat}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
+Similarly, we can define more expressive types for familiar list functions such as \hyperref[code:map]{\ttt{map}} and \hyperref[code:reverse]{\ttt{reverse}} which would express the fact that these do not affect the length of the input list, or \hyperref[code:repeat]{\ttt{repeat}}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
 \\ \\
-Unfortunately, we can't implement a lot of these quite yet, since they require more power than just \ttt{head} or \ttt{tail}. 
-\appendix
+Unfortunately, we can't implement a lot of these quite yet, since the tools we have for iteration/recursion as of right now will not work for \ttt{Vec}.
+\newpage
+\begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
+\renewcommand{\contentsname}{\normalsize Contents}
+\localtableofcontents
+\newpage\noindent
 \input{code-listing}
+\end{appendix}
 \end{document}
