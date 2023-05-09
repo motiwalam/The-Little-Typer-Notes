@@ -371,6 +371,31 @@
 
 ;@end // section Lists
 
+;;;;;;;;;;;;;;;;;;;;
+;@begin section Control Flow
+;;;;;;;;;;;;;;;;;;;;
+
+;@begin code if
+; this isn't really a true if as it will always evaluate both branches
+; (unless Pie is lazily evaluated) but it doesn't matter because
+; Pie doesn't have any side effects 
+(claim if (Pi ((a U)) (-> Nat a a a)))
+(define if (lambda (a c true false) (which-Nat c false (const a Nat true))))
+;@end
+
+;@begin code cond
+; the same caveat about evaluation as in "if" applies here
+(claim cond (Pi ((a U)) (-> (List (Pair Nat a)) a a)))
+(define cond
+  (lambda (a cs else)
+    (rec-List
+      cs
+      else
+      (lambda (x xs cond-xs) (if a (car x) (cdr x) cond-xs)))))
+;@end
+
+;@end // section Control Flow
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;@begin section Miscellaneous programs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

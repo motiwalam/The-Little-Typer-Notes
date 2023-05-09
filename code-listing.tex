@@ -394,6 +394,30 @@ This code listing was generated automatically from \href{https://github.com/thec
 \end{minted}
 
 
+\subsection{Control Flow}
+
+\subsubsection{if} \label{code:if}
+\begin{minted}{scheme}
+; this isn't really a true if as it will always evaluate both branches
+; (unless Pie is lazily evaluated) but it doesn't matter because
+; Pie doesn't have any side effects 
+(claim if (Pi ((a U)) (-> Nat a a a)))
+(define if (lambda (a c true false) (which-Nat c false (const a Nat true))))
+\end{minted}
+
+\subsubsection{cond} \label{code:cond}
+\begin{minted}{scheme}
+; the same caveat about evaluation as in "if" applies here
+(claim cond (Pi ((a U)) (-> (List (Pair Nat a)) a a)))
+(define cond
+  (lambda (a cs else)
+    (rec-List
+      cs
+      else
+      (lambda (x xs cond-xs) (if a (car x) (cdr x) cond-xs)))))
+\end{minted}
+
+
 \subsection{Miscellaneous programs}
 
 \subsubsection{Fibonacci} \label{code:Fibonacci}
