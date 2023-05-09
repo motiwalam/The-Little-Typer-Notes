@@ -16,10 +16,10 @@ This code listing was generated automatically from \href{https://github.com/thec
 (define UNat (NaryOp 1 Nat))
 \end{minted}
 
-\subsubsection{Predicate (same as UNat)} \label{code:Predicate}
+\subsubsection{Predicate} \label{code:Predicate}
 \begin{minted}{scheme}
-(claim Predicate U)
-(define Predicate UNat)
+(claim Predicate (-> U U))
+(define Predicate (lambda (a) (-> a Nat)))
 \end{minted}
 
 \subsubsection{BinNat (binary operator on Nat)} \label{code:BinNat}
@@ -131,7 +131,7 @@ This code listing was generated automatically from \href{https://github.com/thec
 \subsubsection{mu (bounded minimization)} \label{code:mu}
 \begin{minted}{scheme}
 ; the smallest natural z <= x satisfying p(z), or x if no such z exists
-(claim mu (-> Nat Predicate Nat))
+(claim mu (-> Nat (Predicate Nat) Nat))
 (define mu
     (lambda (x p)
         ; start at 0 and increment iff p evaluates to false (i.e 0)
@@ -325,6 +325,57 @@ This code listing was generated automatically from \href{https://github.com/thec
                 (lambda (x xs concat-xs) (:: x concat-xs))))))
 \end{minted}
 
+\subsubsection{reverse} \label{code:reverse}
+\begin{minted}{scheme}
+(claim reverse (Pi ((a U)) (NaryOp 1 (List a))))
+(define reverse
+    (lambda (a lst)
+        (rec-List lst
+            (the (List a) nil)
+            (lambda (x xs reverse-xs) (snoc a reverse-xs x)))))
+\end{minted}
+
+\subsubsection{map} \label{code:map}
+\begin{minted}{scheme}
+(claim map (Pi ((a U) (b U)) (-> (-> a b) (List a) (List b))))
+(define map
+    (lambda (a b f lst)
+        (rec-List
+            lst
+            (the (List b) nil)
+            (lambda (x xs map-xs) (:: (f x) map-xs)))))
+\end{minted}
+
+\subsubsection{filter} \label{code:filter}
+\begin{minted}{scheme}
+(claim filter (Pi ((a U)) (-> (Predicate a) (List a) (List a))))
+(define filter
+    (lambda (a p lst)
+        (rec-List
+            lst
+            nil
+            (lambda (x xs filter-xs)
+                (which-Nat (p x) filter-xs (lambda (n) (:: x filter-xs)))))))
+\end{minted}
+
+\subsubsection{foldr} \label{code:foldr}
+\begin{minted}{scheme}
+(claim foldr (Pi ((a U) (b U)) (-> (-> a b b) b (List a) b)))
+(define foldr
+    (lambda (a b f s l)
+        (rec-List 
+            l
+            s
+            (lambda (x xs fold-xs) (f x fold-xs)))))
+\end{minted}
+
+\subsubsection{foldl} \label{code:foldl}
+\begin{minted}{scheme}
+(claim foldl (Pi ((a U) (b U)) (-> (-> b a b) b (List a) b)))
+(define foldl
+    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse l))))
+\end{minted}
+
 
 \subsection{Miscellaneous programs}
 
@@ -378,5 +429,6 @@ This code listing was generated automatically from \href{https://github.com/thec
                     (lambda (z) 
                         (and (prime? z) (> z pn))))))))
 \end{minted}
+
 
 

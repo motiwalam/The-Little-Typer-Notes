@@ -17,9 +17,9 @@
 (define UNat (NaryOp 1 Nat))
 ;@end
 
-;@begin code Predicate (same as UNat)
-(claim Predicate U)
-(define Predicate UNat)
+;@begin code Predicate 
+(claim Predicate (-> U U))
+(define Predicate (lambda (a) (-> a Nat)))
 ;@end
 
 ;@begin code BinNat (binary operator on Nat)
@@ -127,7 +127,7 @@
 
 ;@begin code mu (bounded minimization)
 ; the smallest natural z <= x satisfying p(z), or x if no such z exists
-(claim mu (-> Nat Predicate Nat))
+(claim mu (-> Nat (Predicate Nat) Nat))
 (define mu
     (lambda (x p)
         ; start at 0 and increment iff p evaluates to false (i.e 0)
@@ -308,6 +308,52 @@
                 (lambda (x xs concat-xs) (:: x concat-xs))))))
 ;@end
 
+;@begin code reverse
+(claim reverse (Pi ((a U)) (NaryOp 1 (List a))))
+(define reverse
+    (lambda (a lst)
+        (rec-List lst
+            (the (List a) nil)
+            (lambda (x xs reverse-xs) (snoc a reverse-xs x)))))
+;@end
+
+;@begin code map
+(claim map (Pi ((a U) (b U)) (-> (-> a b) (List a) (List b))))
+(define map
+    (lambda (a b f lst)
+        (rec-List
+            lst
+            (the (List b) nil)
+            (lambda (x xs map-xs) (:: (f x) map-xs)))))
+;@end
+
+;@begin code filter
+(claim filter (Pi ((a U)) (-> (Predicate a) (List a) (List a))))
+(define filter
+    (lambda (a p lst)
+        (rec-List
+            lst
+            nil
+            (lambda (x xs filter-xs)
+                (which-Nat (p x) filter-xs (lambda (n) (:: x filter-xs)))))))
+;@end
+
+;@begin code foldr
+(claim foldr (Pi ((a U) (b U)) (-> (-> a b b) b (List a) b)))
+(define foldr
+    (lambda (a b f s l)
+        (rec-List 
+            l
+            s
+            (lambda (x xs fold-xs) (f x fold-xs)))))
+;@end
+
+;@begin code foldl
+(claim foldl (Pi ((a U) (b U)) (-> (-> b a b) b (List a) b)))
+(define foldl
+    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse l))))
+;@end
+
 ;@end // section Lists
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -362,3 +408,4 @@
 ;@end
 
 ;@end // section Miscellaneous programs
+
