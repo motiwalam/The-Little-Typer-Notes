@@ -250,7 +250,7 @@ and \[
 As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves primitive recursion.
 \begin{itemize}
     \item 
-        Primitive recursion \textbf{does not} yield every possible computable function. A cool counterexample is the \href{https://en.wikipedia.org/wiki/Ackermann_function}{Ackermann function} which is well-defined, total, and computable, but not primitive recursive. \textcolor{red}{Does this mean that the Ackermann function can not be defined in Pie? Does Pie have more constructs beyond \ttt{iter-Nat} capable of surpassing the computing power of primitive recursion?}
+        Primitive recursion \textbf{does not} yield every possible computable function. A cool counterexample is the \href{https://en.wikipedia.org/wiki/Ackermann_function}{Ackermann function} which is well-defined, total, and computable, but not primitive recursive. \textcolor{red}{Does this mean that the Ackermann function can not be defined in Pie? Does Pie have more constructs beyond \ttt{rec-Nat} capable of surpassing the computing power of primitive recursion?}
     \item
         An intuitive way of understanding the computing power of primitive recursion is via ``the computer language" definition. That is, primitive recursion has the same computing power as a programming language with arithmetic, conditionals, comparisons, and \textbf{bounded} loops.
     \item
@@ -292,7 +292,7 @@ The power of the \(\Pi\) operator comes from the fact that the \ttt{R} type is a
 \section{Lists, Lists, and More Lists}
 \subsection{Summary}
 This chapter introduces the \ttt{List} type, which behaves about how you'd expect. There isn't really anything new or surprising here.
-\subsection{The \ttt{List} Type}
+\subsection{The \ttt{List} type}
 Given a type \ttt{E}, \ttt{(List E)} describes a new type.
 \subsection{The \ttt{nil} and \ttt{::} constructors}
 The \ttt{List} type has two constructors, \ttt{nil} and \ttt{::}; the first constructs the empty list whereas the second tacks on a new element ``to the front" of an existing list.
@@ -304,6 +304,45 @@ In other words, let \ttt{target} be a \ttt{(List E)}, \ttt{base} be an \ttt{X}, 
     \ttt{(step e es (rec-List es base step))}
 \]
 \ttt{rec-List} is primitive recursion on lists. 
+\section{Precisely How Many?}
+\subsection{Summary}
+This chapter gives us our first taste of dependent types. The \ttt{Vec} type describes lists with length, so that it depends not only on a type, but on a \textit{value} as well.
+\\ \\
+We see two eliminators for the \ttt{Vec} type, \ttt{head} and \ttt{tail}, and discuss how to write down the types of these eliminators so that they are total.
+\subsection{The \ttt{Vec} type}
+Given a type \ttt{E}, and a \ttt{Nat k}, \ttt{(Vec E k)} is a type which describes a list of elements of type \ttt{E} with length \ttt{k}.
+\subsection{The \ttt{vecnil} and \ttt{vec::} constructors}
+The \ttt{vecnil} constructor constructs a \ttt{(Vec E 0)}.
+\\ \\
+The \ttt{vec::} constructor takes a value of type \ttt{E} and a \ttt{(Vec E k)} and constructs a \ttt{(Vec e (add1 k))}.
+\subsection{The \ttt{head} and \ttt{tail} eliminators}
+The \ttt{head} and \ttt{tail} eliminators do what they sound like they do; \ttt{head} returns the first element whereas \ttt{tail} drops the first element and returns the rest. These are natural functions to define on lists, but they can not be defined for any \ttt{List} type, because the expressions \ttt{(head nil)} and \ttt{(tail nil)} are meaningless. 
+\\ \\
+Clearly, \ttt{head} and \ttt{tail} are only meaningful when applied to non-empty lists; so we somehow need to describe a type that excludes empty lists! This is where \(\Pi\) comes in; \[
+    \text{\ttt{head} has type \ttt{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (add1 k)) a))}}
+\] and \[
+    \text{\ttt{tail} has type \ttt{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (add1 k)) (Vec a k)))}}
+\]
+The type of \ttt{head} depends on a natural number \(k\); given a \(k\), \ttt{head} accepts a vector of length \(k + 1\), thereby guaranteeing the existence of at least one element in the vector and thus making \ttt{head} total. Similarly for \ttt{tail}.
+\subsection{Some initial impressions}
+Dependent types give us \textit{a lot} more power to describe programs. Suddenly, we can Pie a lot more ``dynamic". For example, consider the following Python program:
+\begin{minted}{python}
+    apply = lambda f, args: f(*args)
+\end{minted}
+It is clear what \ttt{apply} is \textit{supposed} to do: take a function and some collection of arguments, and apply the function to those arguments. It is also clear that this function can easily raise an error, but that's par for the course in Python. However, in Pie, we can actually give a reasonable type for \ttt{apply}: \[
+    \ttt{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (NaryOp k a) (Vec a k) a))}
+\] where \ttt{NaryOp} is as \hyperref[code:NaryOp]{defined here}. 
+\\ \\
+Of course, the above type doesn't fully describe the type of our Python program \ttt{apply}, but it's pretty good!
+\\ \\
+Another cool (but rather silly) use case is defining \ttt{length}, which we can simply define as:
+\begin{minted}{scheme}
+(claim length (Pi ((a U) (k Nat)) (-> (Vec a k) Nat)))
+(define length (lambda (a k v) k))
+\end{minted}
+Similarly, we can define more expressive types for familiar list functions such as \ttt{map} and \ttt{reverse} which would express the fact that these do not affect the length of the input list, or \ttt{repeat}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
+\\ \\
+Unfortunately, we can't implement a lot of these quite yet, since they require more power than just \ttt{head} or \ttt{tail}. 
 \appendix
 \section{Some Cool Pie Code} \label{pie-code-appendix}
 \input{code-listing}
