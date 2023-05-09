@@ -130,12 +130,14 @@ This code listing was generated automatically from \href{https://github.com/thec
 
 \subsubsection{mu (bounded minimization)} \label{code:mu}
 \begin{minted}{scheme}
-; the smallest natural z <= x satisfying p(z), or x if no such z exists
+; the smallest natural z <= x satisfying p(z), or x + 1 if no such z exists
 (claim mu (-> Nat (Predicate Nat) Nat))
 (define mu
     (lambda (x p)
         ; start at 0 and increment iff p evaluates to false (i.e 0)
-        (iter-Nat x 0 (lambda (z) ((iterate-n Nat) succ z (cosgn (p z)))))))
+        (iter-Nat x 
+            (cosgn (p 0)) ; // 1 if p(0) is false and 0 if p(0) is true
+            (lambda (z) ((iterate-n Nat) succ z (cosgn (p z)))))))
 \end{minted}
 
 
