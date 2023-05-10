@@ -249,6 +249,26 @@ For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{ste
 and \[
     \ttt{(iter-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (\_ f-n-1) (f f-n-1)))}
 \]
+\subsection{Superfluence of \ttt{rec-Nat} with respect to \ttt{iter-Nat}}
+\ttt{iter-Nat} can be used to implement \ttt{rec-Nat}. Let \(X\) be a set, \(f : \mathbb{N} \times X \to X\) a function. Define \(g : \mathbb{N} \times X \to \mathbb{N} \times X\) by \[
+    g(n, x) = (n + 1, f(n, x))
+\]
+Then, for all \(n \in \bN\), \(s \in X\), \(g^n(0, s) = (n, \ttt{rec-Nat}(n, s, f))\).
+\\ \\
+We can see this by induction on \(n\). Let \(s \in X\). In the base case, \[
+    g^0(0, s) = (0, s) = (0, \ttt{rec-Nat}(0, s, f))
+\]
+Now, let \(k \in \bN\) be arbitrary and suppose \(g^k(0, s) = (k, \ttt{rec-Nat}(k, s, f))\). Then,
+\begin{align*}
+    g^{k + 1}(0, s) 
+        &= g(g^k(0, s)) \\
+        &= g(k, \ttt{rec-Nat}(k, s, f)) \\
+        &= (k + 1, f(k, \ttt{rec-Nat}(k, s, f))) \\
+        &= (k + 1, \ttt{rec-Nat}(k + 1, s, f))
+\end{align*}
+Of course, \(g^n(0, s)\) is given by \ttt{(iter-Nat n (cons 0 s) g)}, which gives the result.
+\\ \\
+This implementation of \ttt{rec-Nat} in terms of \ttt{iter-Nat} can be found \hyperref[code:rec-Nat2]{here}.
 \subsection{Some notes on primitive recursion}
 As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves primitive recursion.
 \begin{itemize}
