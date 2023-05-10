@@ -576,5 +576,15 @@ This code listing was generated automatically from \href{https://github.com/thec
                         (and (prime? z) (> z pn))))))))
 \end{minted}
 
+\subsubsection{rec-nat2 (rec-Nat in terms of iter-Nat)} \label{code:rec-nat2}
+\begin{minted}{scheme}
+(claim rec-Nat2 (Pi ((X U)) (-> Nat X (-> Nat X X) X)))
+(define rec-Nat2
+  (lambda (X target base step)
+    (cdr (iter-Nat
+           target
+           (the (Pair Nat X) (cons 0 base))
+           (lambda (p) (cons (succ (car p)) (step (car p) (cdr p))))))))
+\end{minted}
 
 
