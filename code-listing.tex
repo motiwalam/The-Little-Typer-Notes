@@ -396,6 +396,33 @@ This code listing was generated automatically from \href{https://github.com/thec
 \end{minted}
 
 
+\subsubsection{lst-to-vec} \label{code:lst-to-vec}
+\begin{minted}{scheme}
+(claim lst-to-vec (Pi ((a U) (lst (List a))) (Vec a (length a lst))))
+(define lst-to-vec
+  (lambda (a lst)
+    (ind-List
+      lst
+      (lambda (i) (Vec a (length a i)))
+      vecnil
+      (lambda (x xs vxs) (vec:: x vxs)))))
+\end{minted}
+
+\subsection{Vectors}
+
+\subsubsection{vec-to-lst} \label{code:vec-to-lst}
+\begin{minted}{scheme}
+(claim vec-to-lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
+(define vec-to-lst
+  (lambda (a k v)
+    (ind-Vec k v
+      (lambda (j w) (List a))
+      nil
+      (lambda (k-1 e es les) (:: e les)))))
+\end{minted}
+
+
+
 \subsection{Control Flow}
 
 \subsubsection{if} \label{code:if}
