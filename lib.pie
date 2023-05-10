@@ -211,7 +211,7 @@
     (lambda (n m) (- n (* m (// n m)))))
 ;@end
 
-;@begin code divides
+;@begin code divides?
 (claim divides? BinNat)
 (define divides?
     (lambda (n m) (== 0 (% m n))))
@@ -546,7 +546,7 @@
                         (and (prime? z) (> z pn))))))))
 ;@end
 
-;@begin code rec-nat2 (rec-Nat in terms of iter-Nat)
+;@begin code rec-Nat2 (rec-Nat in terms of iter-Nat)
 (claim rec-Nat2 (Pi ((X U)) (-> Nat X (-> Nat X X) X)))
 (define rec-Nat2
   (lambda (X target base step)

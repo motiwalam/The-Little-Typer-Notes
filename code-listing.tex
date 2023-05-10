@@ -223,7 +223,7 @@ This code listing was generated automatically from \href{https://github.com/thec
     (lambda (n m) (- n (* m (// n m)))))
 \end{minted}
 
-\subsubsection{divides} \label{code:divides}
+\subsubsection{divides?} \label{code:divides?}
 \begin{minted}{scheme}
 (claim divides? BinNat)
 (define divides?
@@ -576,7 +576,7 @@ This code listing was generated automatically from \href{https://github.com/thec
                         (and (prime? z) (> z pn))))))))
 \end{minted}
 
-\subsubsection{rec-nat2 (rec-Nat in terms of iter-Nat)} \label{code:rec-nat2}
+\subsubsection{rec-Nat2 (rec-Nat in terms of iter-Nat)} \label{code:rec-Nat2}
 \begin{minted}{scheme}
 (claim rec-Nat2 (Pi ((X U)) (-> Nat X (-> Nat X X) X)))
 (define rec-Nat2
