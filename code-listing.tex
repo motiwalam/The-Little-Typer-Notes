@@ -421,6 +421,26 @@ This code listing was generated automatically from \href{https://github.com/thec
       (lambda (k-1 e es les) (:: e les)))))
 \end{minted}
 
+\subsubsection{drop} \label{code:drop}
+\begin{minted}{scheme}
+; remove first n elements from a vector of length n + k
+(claim drop (Pi ((a U) (n Nat) (k Nat)) (-> (Vec a (+ k n)) (Vec a k))))
+(define drop
+  (lambda (a n k)
+    (ind-Nat
+      n
+      (lambda (i) (-> (Vec a (+ k i)) (Vec a k)))
+      (lambda (x) x)
+      (lambda (n-1 f) (lambda (w) (f (tail w)))))))
+\end{minted}
+
+\subsubsection{nth-element} \label{code:nth-element}
+\begin{minted}{scheme}
+(claim nth-element (Pi ((a U) (i Nat) (k Nat)) (-> (Vec a (+ (add1 k) i)) a)))
+(define nth-element
+  (lambda (a i k v) (head (drop a i (add1 k) v))))
+\end{minted}
+
 \subsubsection{range} \label{code:range}
 \begin{minted}{scheme}
 ; the sequence (0, ..., k-1)
