@@ -421,6 +421,62 @@ This code listing was generated automatically from \href{https://github.com/thec
       (lambda (k-1 e es les) (:: e les)))))
 \end{minted}
 
+\subsubsection{range} \label{code:range}
+\begin{minted}{scheme}
+; the sequence (0, ..., k-1)
+(claim range (Pi ((k Nat)) (Vec Nat k)))
+(define range
+  (lambda (k)
+    (ind-Nat
+      k
+      (lambda (n) (Vec Nat n))
+      vecnil
+      (lambda (k-1 rk-1) (vec:: (- k (succ k-1)) rk-1)))))
+
+; the sequence (s, ..., e-1)
+(claim range2 (Pi ((s Nat) (e Nat)) (Vec Nat (- e s))))
+; (- m n) == 0 for n >= m
+(define range2
+  (lambda (s e)
+    (ind-Nat
+      (- e s)
+      (lambda (n) (Vec Nat n))
+      vecnil
+      (lambda (k-1 rk-1) (vec:: (- e (succ k-1)) rk-1)))))
+
+; the sequence {s + kst : k \in N, s + kst < e} (ordered by k)
+(claim range3 (Pi ((s Nat) (e Nat) (st Nat)) (Vec Nat (succ (// (- e (succ s)) st)))))
+(define range3
+  (lambda (s e st)
+    (ind-Nat
+      (succ (// (- e (succ s)) st))
+      (lambda (n) (Vec Nat n))
+      vecnil
+      (lambda (k-1 rk-1) (vec:: (+ s (* st (- (succ (// (- e (succ s)) st)) (succ k-1)))) rk-1)))))
+\end{minted}
+
+\subsubsection{mapvec} \label{code:mapvec}
+\begin{minted}{scheme}
+(claim mapvec (Pi ((a U) (b U) (k Nat)) (-> (-> a b) (Vec a k) (Vec b k))))
+(define mapvec
+  (lambda (a b k f v)
+    (ind-Vec k v
+      (lambda (j v) (Vec b j))
+      vecnil
+      (lambda (k-1 e es mes) (vec:: (f e) mes)))))
+\end{minted}
+
+\subsubsection{concatvec} \label{code:concatvec}
+\begin{minted}{scheme}
+(claim concatvec (Pi ((a U) (k Nat) (j Nat)) (-> (Vec a k) (Vec a j) (Vec a (+ j k)))))
+(define concatvec
+  (lambda (a k j v w)
+    (ind-Vec k v
+      (lambda (i x) (Vec a (+ j i)))
+      w
+      (lambda (k-1 e es ces) (vec:: e ces)))))
+\end{minted}
+
 
 
 \subsection{Control Flow}
