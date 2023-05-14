@@ -467,6 +467,23 @@
       (lambda (k-1 e es ces) (vec:: e ces)))))
 ;@end
 
+;@begin code appendvec
+(claim appendvec (Pi ((a U) (k Nat)) (-> a (Vec a k) (Vec a (add1 k)))))
+(define appendvec
+  (lambda (a k e v)
+    (ind-Vec k v
+      (lambda (i x) (Vec a (add1 i)))
+      (vec:: e vecnil)
+      (lambda (k-1 e es ces) (vec:: e ces)))))
+
+;@begin code reversevec
+(claim reversevec (Pi ((a U) (k Nat)) (-> (Vec a k) (Vec a k))))
+(define reversevec
+  (lambda (a k v)
+    (ind-Vec k v
+      (lambda (i x) (Vec a i))
+      vecnil
+      (lambda (k-1 e es ces) (appendvec a k-1 e ces)))))
 ;@end // section Vectors
 
 
@@ -555,5 +572,16 @@
            (the (Pair Nat X) (cons 0 base))
            (lambda (p) (cons (succ (car p)) (step (car p) (cdr p))))))))
 ;@end
-;@end // section Miscellaneous programs
 
+;@begin code ack (Ackermann function)
+(claim ack (-> Nat Nat Nat))
+(define ack
+  (lambda (m)
+    (iter-Nat
+       m
+       succ
+       (lambda (almost-ack)
+         (lambda (n) (iter-Nat (succ n) 1 almost-ack))))))
+;@end
+
+;@end // section Miscellaneous programs
