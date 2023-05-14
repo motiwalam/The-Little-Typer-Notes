@@ -249,7 +249,7 @@ For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{ste
 and \[
     \ttt{(iter-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (\_ f-n-1) (f f-n-1)))}
 \]
-\subsection{Superfluence of \ttt{rec-Nat} with respect to \ttt{iter-Nat}}
+\subsection{Superfluence of \ttt{rec-Nat} with respect to \ttt{iter-Nat}} \label{recNat-in-iterNat}
 \ttt{iter-Nat} can be used to implement \ttt{rec-Nat}. Let \(X\) be a set, \(f : \mathbb{N} \times X \to X\) a function. Define \(g : \mathbb{N} \times X \to \mathbb{N} \times X\) by \[
     g(n, x) = (n + 1, f(n, x))
 \]
@@ -326,7 +326,28 @@ Given a list \((x_1, \dots, x_n)\) of type \ttt{(List A)}, some value \(s\) of t
 In other words, let \ttt{target} be a \ttt{(List E)}, \ttt{base} be an \ttt{X}, and \ttt{step} be a \ttt{(\(\to\) E (List E) X X)}. If \ttt{target} is the same as \ttt{nil}, then \ttt{(rec-List target base step)} is the same \ttt{X} as \ttt{base}. If \ttt{target} is \ttt{(:: e es)}, then \ttt{(rec-List target base step)} is the same \ttt{X} as \[
     \ttt{(step e es (rec-List es base step))}
 \]
-\ttt{rec-List} is primitive recursion on lists. 
+\ttt{rec-List} is primitive recursion on lists.
+\subsection{Some questions about \ttt{rec-List}}
+\subsubsection{Implementing lists with \ttt{Nat}?}
+Given functions \(\ttt{encode} : X \to \bN\) and \(\ttt{decode} : \bN \to X\), we can represent a \ttt{(List X)} \((x_0, \dots, x_n)\) as the natural number \[
+    \prod_{i = 0}^n p_i^{\ttt{encode}(x_i)}
+\] where \(p_i\) is the \(i\)'th prime number.
+\\ \\
+So, \textcolor{red}{might we implement the \ttt{List} type just using \ttt{Nat}? What might go wrong?}
+\\ \\
+Probably, a true equivalent to the \ttt{List} type is not possible, as writing the \ttt{encode} and \ttt{decode} functions for \ttt{Atom} is not possible. However, encoding and decoding functions are easy to write for \ttt{Nat} (successor \& predecessor) and types built on \ttt{Nat} (products of powers of primes \& \hyperref[code:lo]{\(p\)-adic valuations}), so we can at least consider lists of these types.
+\\ \\
+We can represent the empty list with \(0\) so that the length of a list \(\ell\) is 0 if \(\ell = 0\) and otherwise \(\min \{ n \in \bN : p_{n + 1} \nmid \ell \}\) which can be implemented using the \hyperref[code:mu]{bounded minimization operator} and the \hyperref[code:nth-prime]{nth-prime} function.
+\\ \\
+Then, \ttt{rec-List} should also be implementable by using \ttt{rec-Nat} with the target being the length of the list and the step function using \hyperref[code:nth-prime]{nth-prime} and \hyperref[code:lo]{lo} to extract the correct value of \ttt{e} and dividing by all the previous primes to get the value of \ttt{es}.
+\subsubsection{The second argument in the step of \ttt{rec-List}}
+The second argument of the \ttt{step} parameter of \ttt{rec-List} takes both the first element in the list and the remaining elements, as well as the ``almost result". \textcolor{red}{What is the purpose of this argument? Are there functions that can not be implemented without it?}
+\\ \\
+For one thing, the presence of this argument can be made sense of by an appeal to symmetry with \ttt{rec-Nat}. \ttt{Nat} and \ttt{List} are both very similar, in that they are both constructed by starting with a ``base" constructor of zero arguments and then repeatedly applying a sort of ``successor" constructor. \ttt{which-Nat} removes one instance of this successor constructor and gives you access to what's underneath, whereas \ttt{iter-Nat} eliminates ``all the way down" to the base constructor and gives you access to the partial results. \ttt{rec-Nat} combines the power of these two by giving the step function both what is immediately underneath the successor constructor and the partial result.
+\\ \\
+For \ttt{List}, the successor constructor takes two arguments, and so \ttt{rec-List} gives the step function both of these arguments, which are the head and the tail of the list.
+\\ \\
+This isn't exactly illuminating though. The question remains, \textcolor{red}{is this argument actually useful?} Now, I think the second argument is not \textit{strictly} necessary as long as you have the first one, since you can build it up from scratch, by using a similar trick as in \autoref{recNat-in-iterNat}. Again, though, what kind of algorithms \textit{require} this argument (whether it is explicitly passed in or built up from scratch)?
 \section{Precisely How Many?}
 \subsection{Summary}
 This chapter gives us our first taste of dependent types. The \ttt{Vec} type describes lists with length, so that it depends not only on a type, but on a \textit{value} as well.
@@ -366,6 +387,44 @@ Another cool (but admittedly silly) use case is defining \ttt{length}, which we 
 Similarly, we can define more expressive types for familiar list functions such as \hyperref[code:map]{\ttt{map}} and \hyperref[code:reverse]{\ttt{reverse}} which would express the fact that these do not affect the length of the input list, or \hyperref[code:repeat]{\ttt{repeat}}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
 \\ \\
 Unfortunately, we can't implement a lot of these quite yet, since the tools we have for iteration/recursion as of right now will not work for \ttt{Vec}.
+\subsection{How far can we go with dependent types?}
+In this chapter, we saw how the types of \ttt{head} and \ttt{tail} involve the term \ttt{(Vec a (add1 k))}. That \ttt{(add1 k)} can be replaced with any arbitrary program that produces a natural number; so, \textcolor{red}{how can Pie tell if two of these types of expressions are equal if they are written in different ways?}
+\\ \\
+For example, suppose we have a function \[
+    \ttt{(claim double (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a k) (Vec a (+ k k)))))}
+\]
+and a function \[
+    \ttt{(claim un-interleave (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (* 2 k)) (Pair (Vec a k) (Vec a k)))))}
+\]
+Would we be able to compose these functions? How can we tell Pie that \ttt{(+ k k)} is the same \ttt{Nat} as \ttt{(* 2 k)}?
+\section{It All Depends on the Motive}
+\subsection{Summary}
+This chapter introduces the \ttt{ind-Nat} eliminator, which allows us to use \ttt{rec-Nat} in situations where the type of the ``almost results" change with each call to the step function. 
+\\ \\
+This opens up a new class of programs that we couldn't implement before, such as programs that construct or eliminate vectors.
+\subsection{The \ttt{ind-Nat} eliminator}
+For
+\begin{align*}
+    \ttt{target} &\quad \text{a \ttt{Nat}} \\
+    \ttt{mot} &\quad \text{a \ttt{(\(\to\) Nat \(\mathcal{U}\))}} \\
+    \ttt{base} &\quad \text{a \ttt{(mot zero)}} \\
+    \ttt{step} &\quad \text{a \ttt{(\(\Pi\) ((k Nat)) (\(\to\) (mot k) (mot (add1 k))))}}
+\end{align*}
+the expression \(E \coloneqq \ttt{(ind-Nat target mot base step)}\) is a \ttt{(mot target)}.
+\\ \\
+Furthermore, \(E\) is the same \ttt{(mot zero)} as \ttt{base} when \ttt{target} is zero, and the same \ttt{(mot (add1 n))} as \[
+    \ttt{(step n (ind-Nat n mot base step))}
+\] when \ttt{target} is \ttt{(add1 n)}.
+\\ \\
+Roughly, \ttt{ind-Nat} can be used to compute expressions of the form \[
+    f_n(n, f_{n - 1}(n-1, f_{n-2}(n - 2, \dots f_0(0, s)\dots)))
+\] where \(s \in X_0\) and \(f_k : \bN \times X_k \to X_{k + 1}\). This isn't exactly right, though, as the functions \(f_k\) aren't exactly independent, as the notation might imply, but rather they all have ``roughly the same behaviour". \textcolor{red}{How can we describe this restriction on the sequence of functions more precisely?}
+\\ \\
+So, we can think of applying \ttt{ind-Nat} to \(n\) as a sort of path through the first \(n + 1\) types in an infinite sequence of types. It seems that not all sequences of types are valid, though; for example, I don't think it is possible to use \ttt{ind-Nat} to traverse the sequence \ttt{Atom, Nat, Atom, Nat, \dots} \textcolor{red}{What kind of sequences are valid?}
+\\ \\
+In general, \textcolor{red}{what can \ttt{ind-Nat} do and not do? On one hand, it seems like the new \ttt{mot} argument makes \ttt{ind-Nat} significantly stronger, but it feels like there are some subtle restrictions that aren't obvious from the type}.
+\subsection{Superfluence of \ttt{rec-Nat} with respect to \ttt{ind-Nat}}
+\ttt{rec-Nat} is just \ttt{ind-Nat} with a constant function supplied for \ttt{mot}. This makes sense, as the \ttt{mot} parameter determines the type of \ttt{step} and the ``almost result" at each iteration, which in the case of \ttt{rec-Nat} never changes.
 \newpage
 \begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
