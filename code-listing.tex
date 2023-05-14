@@ -1,3 +1,502 @@
+This code listing was generated automatically from \href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\ttt{lib.pie} in this repository}.
+\subsection{Types}
+
+\subsubsection{NaryOp} \label{code:NaryOp}
+\begin{minted}{scheme}
+; creates the type of an n-ary operation over some type a
+(claim NaryOp (-> Nat U U))
+(define NaryOp
+    (lambda (n a)
+        (iter-Nat n a (lambda (u) (-> a u)))))
+\end{minted}
+
+\subsubsection{UNat (unary operator on Nat)} \label{code:UNat}
+\begin{minted}{scheme}
+(claim UNat U)
+(define UNat (NaryOp 1 Nat))
+\end{minted}
+
+\subsubsection{Predicate} \label{code:Predicate}
+\begin{minted}{scheme}
+(claim Predicate (-> U U))
+(define Predicate (lambda (a) (-> a Nat)))
+\end{minted}
+
+\subsubsection{BinNat (binary operator on Nat)} \label{code:BinNat}
+\begin{minted}{scheme}
+(claim BinNat U)
+(define BinNat (NaryOp 2 Nat))
+\end{minted}
+
+
+\subsection{Combinators}
+
+\subsubsection{S (substitution)} \label{code:S}
+\begin{minted}{scheme}
+(claim S
+    (Pi ((a U) (b U) (c U)) (-> (-> a b c) (-> a b) a c)))
+(define S
+    (lambda (a b c) (lambda (x y z) (x z (y z)))))
+\end{minted}
+
+\subsubsection{K (const)} \label{code:K}
+\begin{minted}{scheme}
+(claim const
+    (Pi ((a U) (b U)) (-> a b a)))
+(define const
+    (lambda (a b) (lambda (x y) x)))
+\end{minted}
+
+\subsubsection{I (identity)} \label{code:I}
+\begin{minted}{scheme}
+(claim id 
+    (Pi ((a U)) (-> a a)))
+(define id
+    (lambda (a) (lambda (x) x)))
+\end{minted}
+
+\subsubsection{C (flip)} \label{code:C}
+\begin{minted}{scheme}
+(claim flip
+    (Pi ((a U) (b U) (c U)) (-> (-> a b c) (-> b a c))))
+(define flip
+    (lambda (a b c)
+        (lambda (f)
+            (lambda (x y) (f y x)))))
+\end{minted}
+
+\subsubsection{B (compose)} \label{code:B}
+\begin{minted}{scheme}
+(claim B
+    (Pi ((a U) (b U) (c U)) (-> (-> b c) (-> a b) (-> a c))))
+(define B
+    (lambda (a b c)
+        (lambda (f g)
+            (lambda (x) (f (g x))))))
+\end{minted}
+
+\subsubsection{B1 (compose unary with binary)} \label{code:B1}
+\begin{minted}{scheme}
+(claim B1
+    (Pi ((a U) (b U) (c U) (d U)) (-> (-> c d) (-> a b c) (-> a b d))))
+;TODO: is it possible to use the B1 = BBB construction?
+(define B1
+    (lambda (a b c d)
+        (lambda (f g)
+            (lambda (x y) (f (g x y))))))
+\end{minted}
+
+
+\subsection{Functional Tools}
+
+\subsubsection{iterate-n} \label{code:iterate-n}
+\begin{minted}{scheme}
+(claim iterate-n
+    (Pi ((a U)) (-> (-> a a) a Nat a)))
+(define iterate-n
+    (lambda (a)
+        (lambda (f s n)
+            (iter-Nat n s f))))
+\end{minted}
+
+
+\subsection{Utilities}
+
+\subsubsection{successor} \label{code:successor}
+\begin{minted}{scheme}
+(claim succ UNat)
+(define succ (lambda (n) (add1 n)))
+\end{minted}
+
+\subsubsection{predecessor} \label{code:predecessor}
+\begin{minted}{scheme}
+(claim pred UNat)
+(define pred (lambda (n) (which-Nat n zero (id Nat))))
+\end{minted}
+
+\subsubsection{sgn} \label{code:sgn}
+\begin{minted}{scheme}
+; 1 if n > 0, 0 otherwise
+(claim sgn UNat)
+(define sgn (lambda (n) (which-Nat n zero ((const Nat Nat) 1))))
+\end{minted}
+
+\subsubsection{cosgn} \label{code:cosgn}
+\begin{minted}{scheme}
+; 0 if n > 0, 1 otherwise
+(claim cosgn UNat)
+(define cosgn (lambda (n) (which-Nat n 1 ((const Nat Nat) 0))))
+\end{minted}
+
+\subsubsection{mu (bounded minimization)} \label{code:mu}
+\begin{minted}{scheme}
+; the smallest natural z <= x satisfying p(z), or x + 1 if no such z exists
+(claim mu (-> Nat (Predicate Nat) Nat))
+(define mu
+    (lambda (x p)
+        ; start at 0 and increment iff p evaluates to false (i.e 0)
+        (iter-Nat x 
+            (cosgn (p 0)) ; // 1 if p(0) is false and 0 if p(0) is true
+            (lambda (z) ((iterate-n Nat) succ z (cosgn (p z)))))))
+\end{minted}
+
+
+\subsection{Arithmetic \& Comparisons}
+
+\subsubsection{addition} \label{code:addition}
+\begin{minted}{scheme}
+(claim + BinNat)
+(define + ((iterate-n Nat) succ))
+\end{minted}
+
+\subsubsection{subtraction} \label{code:subtraction}
+\begin{minted}{scheme}
+(claim - BinNat)
+(define - ((iterate-n Nat) pred))
+\end{minted}
+
+\subsubsection{multiplication} \label{code:multiplication}
+\begin{minted}{scheme}
+(claim * BinNat)
+(define * (lambda (n) ((iterate-n Nat) (+ n) 0)))
+\end{minted}
+
+\subsubsection{exponentiation} \label{code:exponentiation}
+\begin{minted}{scheme}
+(claim ^ BinNat)
+(define ^ (lambda (n m) ((iterate-n Nat) (* n) 1 m)))
+\end{minted}
+
+\subsubsection{equality} \label{code:equality}
+\begin{minted}{scheme}
+; output 1 when n = m and 0 otherwise
+(claim == BinNat)
+(define ==
+  (lambda (n m)
+    ; (n - m) + (m - n) = 0 if n = m
+    ; and > 0 otherwise, hence subtracting
+    ; it from 1 returns 1 iff n = m
+    (- 1 (+ (- n m) (- m n)))))
+\end{minted}
+
+\subsubsection{gt} \label{code:gt}
+\begin{minted}{scheme}
+(claim > BinNat)
+(define >
+    (lambda (n m) (sgn (- n m))))
+\end{minted}
+
+\subsubsection{lt} \label{code:lt}
+\begin{minted}{scheme}
+(claim < BinNat)
+(define <
+    (lambda (n m) (sgn (- m n))))
+\end{minted}
+
+\subsubsection{gte} \label{code:gte}
+\begin{minted}{scheme}
+(claim >= BinNat)
+(define >=
+    (lambda (n m) (cosgn (< n m))))
+\end{minted}
+
+\subsubsection{lte} \label{code:lte}
+\begin{minted}{scheme}
+(claim <= BinNat)
+(define <=
+    (lambda (n m) (cosgn (> n m))))
+\end{minted}
+
+\subsubsection{floordiv} \label{code:floordiv}
+\begin{minted}{scheme}
+; floor(n/m) is the smallest number z such that (z + 1)m > n
+(claim // BinNat)
+(define //
+    (lambda (n m)
+        (mu n (lambda (z) (> (* (succ z) m) n)))))
+\end{minted}
+
+\subsubsection{modulus} \label{code:modulus}
+\begin{minted}{scheme}
+(claim % BinNat)
+(define %
+    (lambda (n m) (- n (* m (// n m)))))
+\end{minted}
+
+\subsubsection{divides?} \label{code:divides?}
+\begin{minted}{scheme}
+(claim divides? BinNat)
+(define divides?
+    (lambda (n m) (== 0 (% m n))))
+\end{minted}
+
+\subsubsection{lo (get exponent of factor)} \label{code:lo}
+\begin{minted}{scheme}
+; lo is the b-adic valuation of n
+; it is the smallest integer z such that b^(z + 1) does not divide n
+(claim lo BinNat)
+(define lo
+    (lambda (b n) (mu n (lambda (z) (cosgn (divides? (^ b (succ z)) n))))))
+\end{minted}
+
+\subsubsection{sum} \label{code:sum}
+\begin{minted}{scheme}
+; sum a function f from 0 to n
+; i.e, f(0) + f(1) + ... + f(n)
+(claim sum (-> UNat Nat Nat))
+(define sum
+    (lambda (f n)
+        (rec-Nat n (f 0) (lambda (n-1 s) (+ s (f (succ n-1)))))))
+\end{minted}
+
+\subsubsection{prod} \label{code:prod}
+\begin{minted}{scheme}
+; multiply a function f from 0 to n
+; i.e, f(0) * f(1) * ... * f(n)
+(claim prod (-> UNat Nat Nat))
+(define prod
+    (lambda (f n)
+        (rec-Nat n (f 0) (lambda (n-1 s) (* s (f (succ n-1)))))))
+\end{minted}
+
+
+\subsection{Logic}
+
+\subsubsection{not} \label{code:not}
+\begin{minted}{scheme}
+(claim not UNat)
+(define not cosgn)
+\end{minted}
+
+\subsubsection{and} \label{code:and}
+\begin{minted}{scheme}
+(claim and BinNat)
+(define and *)
+\end{minted}
+
+\subsubsection{or} \label{code:or}
+\begin{minted}{scheme}
+(claim or BinNat)
+(define or
+    (lambda (p q) (sgn (+ p q))))
+\end{minted}
+
+\subsubsection{xor} \label{code:xor}
+\begin{minted}{scheme}
+(claim xor BinNat)
+(define xor
+    (lambda (p q) (== 1 (+ p q))))
+\end{minted}
+
+
+\subsection{Lists}
+
+\subsubsection{prepend (:: or cons)} \label{code:prepend}
+\begin{minted}{scheme}
+(claim prepend (Pi ((a U)) (-> a (List a) (List a))))
+(define prepend (lambda (a x xs) (:: x xs)))
+\end{minted}
+
+\subsubsection{snoc (flip append)} \label{code:snoc}
+\begin{minted}{scheme}
+(claim snoc (Pi ((a U)) (-> (List a) a (List a))))
+(define snoc
+    (lambda (a)
+        (lambda (lst e)
+            (rec-List
+                lst
+                (:: e nil)
+                (lambda (x xs snoc-xs) (:: x snoc-xs))))))
+
+(claim append (Pi ((a U)) (-> a (List a) (List a))))
+(define append (lambda (a) (flip (List a) a (List a) (snoc a))))
+\end{minted}
+
+
+\subsubsection{length} \label{code:length}
+\begin{minted}{scheme}
+(claim length (Pi ((a U)) (-> (List a) Nat)))
+(define length
+    (lambda (a)
+        (lambda (lst)
+            (rec-List
+                lst
+                0
+                (lambda (e es les) (succ les))))))
+\end{minted}
+
+\subsubsection{concat} \label{code:concat}
+\begin{minted}{scheme}
+(claim concat (Pi ((a U)) (NaryOp 2 (List a))))
+(define concat
+    (lambda (a)
+        (lambda (l1 l2)
+            (rec-List
+                l1
+                l2
+                (lambda (x xs concat-xs) (:: x concat-xs))))))
+\end{minted}
+
+\subsubsection{reverse} \label{code:reverse}
+\begin{minted}{scheme}
+(claim reverse (Pi ((a U)) (NaryOp 1 (List a))))
+(define reverse
+    (lambda (a lst)
+        (rec-List lst
+            (the (List a) nil)
+            (lambda (x xs reverse-xs) (snoc a reverse-xs x)))))
+\end{minted}
+
+\subsubsection{map} \label{code:map}
+\begin{minted}{scheme}
+(claim map (Pi ((a U) (b U)) (-> (-> a b) (List a) (List b))))
+(define map
+    (lambda (a b f lst)
+        (rec-List
+            lst
+            (the (List b) nil)
+            (lambda (x xs map-xs) (:: (f x) map-xs)))))
+\end{minted}
+
+\subsubsection{filter} \label{code:filter}
+\begin{minted}{scheme}
+(claim filter (Pi ((a U)) (-> (Predicate a) (List a) (List a))))
+(define filter
+    (lambda (a p lst)
+        (rec-List
+            lst
+            (the (List a) nil)
+            (lambda (x xs filter-xs)
+                (which-Nat (p x) filter-xs (lambda (n) (:: x filter-xs)))))))
+\end{minted}
+
+\subsubsection{foldr} \label{code:foldr}
+\begin{minted}{scheme}
+(claim foldr (Pi ((a U) (b U)) (-> (-> a b b) b (List a) b)))
+(define foldr
+    (lambda (a b f s l)
+        (rec-List 
+            l
+            s
+            (lambda (x xs fold-xs) (f x fold-xs)))))
+\end{minted}
+
+\subsubsection{foldl} \label{code:foldl}
+\begin{minted}{scheme}
+(claim foldl (Pi ((a U) (b U)) (-> (-> b a b) b (List a) b)))
+(define foldl
+    (lambda (a b f s l) (foldr a b (flip b a b f) s (reverse a l))))
+\end{minted}
+
+\subsubsection{repeat} \label{code:repeat}
+\begin{minted}{scheme}
+(claim repeat (Pi ((a U)) (-> Nat a (List a))))
+(define repeat
+    (lambda (a k x) (iterate-n (List a) (prepend a x) (the (List a) nil) k)))
+\end{minted}
+
+
+\subsubsection{lst-to-vec} \label{code:lst-to-vec}
+\begin{minted}{scheme}
+(claim lst-to-vec (Pi ((a U) (lst (List a))) (Vec a (length a lst))))
+(define lst-to-vec
+  (lambda (a lst)
+    (ind-List
+      lst
+      (lambda (i) (Vec a (length a i)))
+      vecnil
+      (lambda (x xs vxs) (vec:: x vxs)))))
+\end{minted}
+
+\subsection{Vectors}
+
+\subsubsection{vec-to-lst} \label{code:vec-to-lst}
+\begin{minted}{scheme}
+(claim vec-to-lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
+(define vec-to-lst
+  (lambda (a k v)
+    (ind-Vec k v
+      (lambda (j w) (List a))
+      nil
+      (lambda (k-1 e es les) (:: e les)))))
+\end{minted}
+
+\subsubsection{drop} \label{code:drop}
+\begin{minted}{scheme}
+; remove first n elements from a vector of length n + k
+(claim drop (Pi ((a U) (n Nat) (k Nat)) (-> (Vec a (+ k n)) (Vec a k))))
+(define drop
+  (lambda (a n k)
+    (ind-Nat
+      n
+      (lambda (i) (-> (Vec a (+ k i)) (Vec a k)))
+      (lambda (x) x)
+      (lambda (n-1 f) (lambda (w) (f (tail w)))))))
+\end{minted}
+
+\subsubsection{nth-element} \label{code:nth-element}
+\begin{minted}{scheme}
+(claim nth-element (Pi ((a U) (i Nat) (k Nat)) (-> (Vec a (+ (add1 k) i)) a)))
+(define nth-element
+  (lambda (a i k v) (head (drop a i (add1 k) v))))
+\end{minted}
+
+\subsubsection{range} \label{code:range}
+\begin{minted}{scheme}
+; the sequence (0, ..., k-1)
+(claim range (Pi ((k Nat)) (Vec Nat k)))
+(define range
+  (lambda (k)
+    (ind-Nat
+      k
+      (lambda (n) (Vec Nat n))
+      vecnil
+      (lambda (k-1 rk-1) (vec:: (- k (succ k-1)) rk-1)))))
+
+; the sequence (s, ..., e-1)
+(claim range2 (Pi ((s Nat) (e Nat)) (Vec Nat (- e s))))
+; (- m n) == 0 for n >= m
+(define range2
+  (lambda (s e)
+    (ind-Nat
+      (- e s)
+      (lambda (n) (Vec Nat n))
+      vecnil
+      (lambda (k-1 rk-1) (vec:: (- e (succ k-1)) rk-1)))))
+
+; the sequence {s + kst : k \in N, s + kst < e} (ordered by k)
+(claim range3 (Pi ((s Nat) (e Nat) (st Nat)) (Vec Nat (succ (// (- e (succ s)) st)))))
+(define range3
+  (lambda (s e st)
+    (ind-Nat
+      (succ (// (- e (succ s)) st))
+      (lambda (n) (Vec Nat n))
+      vecnil
+      (lambda (k-1 rk-1) (vec:: (+ s (* st (- (succ (// (- e (succ s)) st)) (succ k-1)))) rk-1)))))
+\end{minted}
+
+\subsubsection{mapvec} \label{code:mapvec}
+\begin{minted}{scheme}
+(claim mapvec (Pi ((a U) (b U) (k Nat)) (-> (-> a b) (Vec a k) (Vec b k))))
+(define mapvec
+  (lambda (a b k f v)
+    (ind-Vec k v
+      (lambda (j v) (Vec b j))
+      vecnil
+      (lambda (k-1 e es mes) (vec:: (f e) mes)))))
+\end{minted}
+
+\subsubsection{concatvec} \label{code:concatvec}
+\begin{minted}{scheme}
+(claim concatvec (Pi ((a U) (k Nat) (j Nat)) (-> (Vec a k) (Vec a j) (Vec a (+ j k)))))
+(define concatvec
+  (lambda (a k j v w)
+    (ind-Vec k v
+      (lambda (i x) (Vec a (+ j i)))
+      w
+      (lambda (k-1 e es ces) (vec:: e ces)))))
+\end{minted}
+
 \subsubsection{appendvec} \label{code:appendvec}
 \begin{minted}{scheme}
 (claim appendvec (Pi ((a U) (k Nat)) (-> a (Vec a k) (Vec a (add1 k)))))
@@ -7,6 +506,7 @@
       (lambda (i x) (Vec a (add1 i)))
       (vec:: e vecnil)
       (lambda (k-1 e es ces) (vec:: e ces)))))
+\end{minted}
 
 \subsubsection{reversevec} \label{code:reversevec}
 \begin{minted}{scheme}
@@ -17,7 +517,9 @@
       (lambda (i x) (Vec a i))
       vecnil
       (lambda (k-1 e es ces) (appendvec a k-1 e ces)))))
+
 \end{minted}
+
 
 
 \subsection{Control Flow}
@@ -120,5 +622,4 @@
          (lambda (n) (iter-Nat (succ n) 1 almost-ack))))))
 \end{minted}
 
-\end{minted}
 

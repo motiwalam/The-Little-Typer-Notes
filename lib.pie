@@ -475,6 +475,7 @@
       (lambda (i x) (Vec a (add1 i)))
       (vec:: e vecnil)
       (lambda (k-1 e es ces) (vec:: e ces)))))
+;@end
 
 ;@begin code reversevec
 (claim reversevec (Pi ((a U) (k Nat)) (-> (Vec a k) (Vec a k))))
@@ -484,6 +485,9 @@
       (lambda (i x) (Vec a i))
       vecnil
       (lambda (k-1 e es ces) (appendvec a k-1 e ces)))))
+
+;@end
+
 ;@end // section Vectors
 
 
