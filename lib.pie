@@ -4,12 +4,19 @@
 ;@begin section Types
 ;;;;;;;;;;;;;;;
 
+;@begin code NaryTo
+; creates the type of an n-ary function
+; where the arguments are of type a
+; and the result is of type b
+(claim NaryTo (-> Nat U U U))
+(define NaryTo
+    (lambda (n a b)
+        (iter-Nat n b (lambda (u) (-> a u)))))
+
 ;@begin code NaryOp
 ; creates the type of an n-ary operation over some type a
 (claim NaryOp (-> Nat U U))
-(define NaryOp
-    (lambda (n a)
-        (iter-Nat n a (lambda (u) (-> a u)))))
+(define NaryOp (lambda (n a) (NaryTo n a a)))
 ;@end
 
 ;@begin code UNat (unary operator on Nat)

@@ -1,13 +1,20 @@
-This code listing was generated automatically from \href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\ttt{lib.pie} in this repository}.
 \subsection{Types}
+
+\subsubsection{NaryTo} \label{code:NaryTo}
+\begin{minted}{scheme}
+; creates the type of an n-ary function
+; where the arguments are of type a
+; and the result is of type b
+(claim NaryTo (-> Nat U U U))
+(define NaryTo
+    (lambda (n a b)
+        (iter-Nat n b (lambda (u) (-> a u)))))
 
 \subsubsection{NaryOp} \label{code:NaryOp}
 \begin{minted}{scheme}
 ; creates the type of an n-ary operation over some type a
 (claim NaryOp (-> Nat U U))
-(define NaryOp
-    (lambda (n a)
-        (iter-Nat n a (lambda (u) (-> a u)))))
+(define NaryOp (lambda (n a) (NaryTo n a a)))
 \end{minted}
 
 \subsubsection{UNat (unary operator on Nat)} \label{code:UNat}
@@ -28,6 +35,7 @@ This code listing was generated automatically from \href{https://github.com/thec
 (define BinNat (NaryOp 2 Nat))
 \end{minted}
 
+\end{minted}
 
 \subsection{Combinators}
 
