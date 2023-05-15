@@ -154,6 +154,25 @@ This code listing was generated automatically from \href{https://github.com/thec
                         ))))))
 \end{minted}
 
+\subsubsection{apply+ (vec-to-args)} \label{code:apply+}
+\begin{minted}{scheme}
+; applies a function from a^{k + 1} -> b to a (Vec a (k + 1))
+(claim apply+
+    (Pi
+        ((a U)
+         (b U)
+         (k Nat))
+        (-> (NaryTo (add1 k) a b) (Vec a (add1 k)) b)))
+(define apply+
+    (lambda (a b k)
+        (ind-Nat
+            k
+            (lambda (i) (-> (NaryTo (add1 i) a b) (Vec a (add1 i)) b))
+            (lambda (g v) (g (head v)))
+            (lambda (k-1 apply+k-1)
+                (lambda (g v) (apply+k-1 (g (head v)) (tail v)))))))
+\end{minted}
+
 
 \subsection{Utilities}
 
