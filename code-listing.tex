@@ -107,6 +107,27 @@
             (iter-Nat n s f))))
 \end{minted}
 
+\subsubsection{compose} \label{code:compose}
+\begin{minted}{scheme}
+; composes a unary function from b to c with a k+1-ary function from a^{k+1} to b
+(claim compose
+    (Pi 
+        ((k Nat)
+         (a U)
+         (b U)
+         (c U))
+        (-> (-> b c) (NaryTo (add1 k) a b) (NaryTo (add1 k) a c))))
+(define compose
+    (lambda (k a b c)
+        (ind-Nat
+            k
+            (lambda (i) (-> (-> b c) (NaryTo (add1 i) a b) (NaryTo (add1 i) a c)))
+            (lambda (f g x) (f (g x)))
+            (lambda (k-1 compose-k-1)
+                (lambda (f g x) (compose-k-1 f (g x))))
+            )))
+\end{minted}
+
 
 \subsection{Utilities}
 
