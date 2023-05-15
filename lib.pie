@@ -125,7 +125,7 @@
             )))
 ;@end
 
-;@begin code args->vec
+;@begin code args-to-vec
 ; constructs function from a^{k+1} -> (Vec a (k + 1)) which simply collects 
 ; its arguments into a vector
 (claim args->vec
@@ -146,8 +146,7 @@
                         a (Vec a (add1 k-1)) (Vec a (add1 (add1 k-1)))
                         (lambda (v) (vec:: x v))
                         g
-                        )))
-            )))
+                        ))))))
 ;@end
 
 ;@end // section Functional Tools
@@ -427,8 +426,8 @@
 ;@end // section Lists
 
 ;@begin code lst-to-vec
-(claim lst-to-vec (Pi ((a U) (lst (List a))) (Vec a (length a lst))))
-(define lst-to-vec
+(claim lst->vec (Pi ((a U) (lst (List a))) (Vec a (length a lst))))
+(define lst->vec
   (lambda (a lst)
     (ind-List
       lst
@@ -440,8 +439,8 @@
 ;@begin section Vectors
 
 ;@begin code vec-to-lst
-(claim vec-to-lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
-(define vec-to-lst
+(claim vec->lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
+(define vec->lst
   (lambda (a k v)
     (ind-Vec k v
       (lambda (j w) (List a))

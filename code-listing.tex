@@ -129,7 +129,7 @@ This code listing was generated automatically from \href{https://github.com/thec
             )))
 \end{minted}
 
-\subsubsection{args->vec} \label{code:args->vec}
+\subsubsection{args-to-vec} \label{code:args-to-vec}
 \begin{minted}{scheme}
 ; constructs function from a^{k+1} -> (Vec a (k + 1)) which simply collects 
 ; its arguments into a vector
@@ -151,8 +151,7 @@ This code listing was generated automatically from \href{https://github.com/thec
                         a (Vec a (add1 k-1)) (Vec a (add1 (add1 k-1)))
                         (lambda (v) (vec:: x v))
                         g
-                        )))
-            )))
+                        ))))))
 \end{minted}
 
 
@@ -454,8 +453,8 @@ This code listing was generated automatically from \href{https://github.com/thec
 
 \subsubsection{lst-to-vec} \label{code:lst-to-vec}
 \begin{minted}{scheme}
-(claim lst-to-vec (Pi ((a U) (lst (List a))) (Vec a (length a lst))))
-(define lst-to-vec
+(claim lst->vec (Pi ((a U) (lst (List a))) (Vec a (length a lst))))
+(define lst->vec
   (lambda (a lst)
     (ind-List
       lst
@@ -468,8 +467,8 @@ This code listing was generated automatically from \href{https://github.com/thec
 
 \subsubsection{vec-to-lst} \label{code:vec-to-lst}
 \begin{minted}{scheme}
-(claim vec-to-lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
-(define vec-to-lst
+(claim vec->lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
+(define vec->lst
   (lambda (a k v)
     (ind-Vec k v
       (lambda (j w) (List a))
