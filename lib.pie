@@ -12,6 +12,7 @@
 (define NaryTo
     (lambda (n a b)
         (iter-Nat n b (lambda (u) (-> a u)))))
+;@end
 
 ;@begin code NaryOp
 ; creates the type of an n-ary operation over some type a
