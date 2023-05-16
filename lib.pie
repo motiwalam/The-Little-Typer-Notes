@@ -605,7 +605,6 @@
       (lambda (i x) (Vec a i))
       vecnil
       (lambda (k-1 e es ces) (appendvec a k-1 e ces)))))
-
 ;@end
 
 ;@end // section Vectors
