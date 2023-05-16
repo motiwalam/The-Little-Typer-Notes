@@ -1,0 +1,30 @@
+Dependent Types Assignment 1
+
+This assignment has two parts: one in which you use Pie, and one that
+has you write an evaluator for untyped lambda calculus with integers
+and addition. The Pie exercises cover chapters 1 and 2, and the
+Haskell exercises cover the concepts of evaluators, closures, and
+alpha-equivalence from class lectures.
+
+The Pie assignment should be completed by writing a definition for
+each claim, and then uncommenting the tests so that they all pass.
+Passing the tests is necessary, but not sufficient, for completing the
+exercise - you should also follow the instructions in the file.
+
+The Haskell assignment should be completed by replacing each
+occurrence of 'error "TODO"' with suitable Haskell code. The case
+expression in "helper" on line 87 will require additional alternatives
+to be added. Make sure to read the code before writing your
+additions. In the Haskell program, there is a "main" action that runs
+some tests. As with the Pie exercises, it is necessary but not
+sufficient that all these tests pass.
+
+The Pie and Haskell parts are each worth 50% of the assignment, and
+each individual task is worth an equal amount. In the Pie assignment,
+each task is numbered. In the Haskell, each 'error "TODO"' is
+considered a task, as is each missing case from "helper" on line 84.
+
+Please submit your solutions in a .tar.gz or .zip file, as executable
+source code rather than a PDF or Word file that contains code, and
+write your name and PSU email address in each file that you submit.
+

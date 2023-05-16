@@ -1,0 +1,79 @@
+CS 410/510 Dependent Types
+Assignment 0
+
+Your name:
+Your PSU email address:
+
+Questions 0, 1, 2, 4, and 6 are each worth 20%.
+
+0. What do you hope to get out of this class?
+
+
+1. I sometimes like to use other programming languages as examples
+   during lectures. To make sure they're relevant, please rate your
+   background with the following languages from 0 to 3, where 0 means
+   you've never used it, 1 means you've worked through a tutorial or
+   two, 2 means you've made a significant project in it, and 3 means
+   multiple years of experience:
+
+ - Haskell
+ - Scheme and/or Racket
+ - Other languages in the Lisp family (Clojure, Common Lisp, Emacs Lisp)
+ - OCaml
+ - Java
+ - Scala
+ - Rust
+ - Python
+
+
+2. Do you have experience working on a command line?
+
+
+3. Install Racket. If you're using the CS Department's machines, this
+   has already been done.
+
+   Then, install Pie, following the instructions at
+   https://github.com/the-little-typer/pie#installation-instructions.
+
+
+4. If the installation of Pie was successful, please enter the
+   following into the definitions window in DrRacket and click "Run":
+
+#lang pie
+
+(claim cake Atom)
+(define cake 'chocolate)
+
+    Paste the output into your answer. If the installation was not
+    successful, please describe the difficulties you encountered in
+    detail.
+
+
+5. Install the GHC Haskell compiler. The way to do this varies based on
+   your operating system; see the "Minimal installers" section of
+   https://www.haskell.org/downloads/ . If you're using the CS Department's
+   machines, this has already been done.
+
+
+6. Make sure that your Haskell installation works by opening "Main.hs"
+   in the "arith" package in GHCI.
+
+   This can be done directly, using
+     ghci Main.hs
+   in the src directory.
+
+   You may also do the same thing using a build tool, with
+     stack repl
+   or 
+     cabal new-repl
+
+   Run the following:
+     eval (Bin Plus (CstI 22) (CstI 44))
+   and
+     eval (Bin Div (CstI 44) (Bin Minus (CstI 3) (CstI 3)))
+
+   Paste GHCI's output into your answer. If your Haskell installation
+   does not seem to be working, please describe the difficulties you
+   encountered in detail.
+
+

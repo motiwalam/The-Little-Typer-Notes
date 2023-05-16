@@ -1,0 +1,8 @@
+Please see the instructions in 3.pie and Main.hs.
+
+The assignment is due on April 24 at 4:15 PM, uploaded to D2L. Please
+submit only plain-text executable code for the Haskell and Pie
+portions, and either JPEG, PNG, PDF, or plain text for the portion
+that involves writing typing rules.
+
+There's no need to upload a zip file or tarball to D2L.

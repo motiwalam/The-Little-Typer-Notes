@@ -1,0 +1,19 @@
+Dependent Types Assignment 2
+
+Like the previous assignment, this assignment has two parts: one in
+which you use Pie, and one that has you extend your evaluator for
+untyped lambda calculus into a normalizer. The Pie exercises cover
+chapter 3, and the Haskell exercises cover the concepts of neutral
+terms, reading back syntax from values, and normalization from class.
+
+For the Pie assignment, please carefully follow the instructions in
+the file 2.pie. In particular, when it requests that you add a
+comment, please remember to do so. There will be no partial credit for
+these problems, but you can improve your solution after receiving
+feedback in order to improve your grade.
+
+For the Haskell assignment, you are provided with an implementation of
+untyped normalization by evaluation (NbE). Please add pairs, following
+the instructions in Main.hs.
+
+Please write your name and PSU email address at the top of both files.
