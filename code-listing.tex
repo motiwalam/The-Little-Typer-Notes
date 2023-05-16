@@ -152,6 +152,57 @@ This code listing was generated automatically from \href{https://github.com/thec
                         (lambda (v) (vec:: x v))
                         g
                         ))))))
+
+; cleaner alias
+(claim make-vec
+    (Pi 
+        ((a U) 
+         (k Nat)) 
+        (NaryTo (add1 k) a (Vec a (add1 k)))))
+(define make-vec args->vec)
+\end{minted}
+
+\subsubsection{args-to-lst} \label{code:args-to-lst}
+\begin{minted}{scheme}
+; constructs function from a^{k+1} -> (List a) which simply collects 
+; its arguments into a list
+(claim args->lst
+  (Pi 
+    ((a U) 
+     (k Nat)) 
+    (NaryTo (add1 k) a (List a))))
+(define args->lst
+    (lambda (a k)
+        (ind-Nat
+            k
+            (lambda (i) (NaryTo (add1 i) a (List a)))
+            (lambda (x) (:: x nil))
+            (lambda (k-1 g)
+                (lambda (x)
+                    (compose
+                        k-1
+                        a (List a) (List a)
+                        (lambda (v) (:: x v))
+                        g
+                        ))))))
+
+; this doesn't work cause vec->lst is defined later
+;  and i'm too lazy to move stuff around
+
+; (define args->lst
+;   (lambda (a k) 
+;     (compose k 
+;         a (Vec a (add1 k)) (List a) 
+;         (vec->lst a (add1 k)) 
+;         (args->vec a k))))
+
+; cleaner alias
+(claim make-lst
+  (Pi 
+    ((a U) 
+     (k Nat)) 
+    (NaryTo (add1 k) a (List a))))
+(define make-lst args->lst)
 \end{minted}
 
 \subsubsection{apply+ (vec-to-args)} \label{code:apply+}
