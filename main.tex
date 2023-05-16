@@ -428,7 +428,7 @@ In general, \textcolor{red}{what can \ttt{ind-Nat} do and not do? On one hand, i
 \subsection{Depending on \ttt{ind-Nat}}
 \ttt{ind-Nat} is necessary when the type of our computation depends on the natural \ttt{target}; that is, \ttt{ind-Nat} is necessary when we are dealing with dependent types. So far, the only dependent type we have seen is the \ttt{Vec} type. By extension, any type which contains the \ttt{Vec} type, such as pairs of vectors, or functions on vectors, are also dependent.
 \\ \\
-In particular, \ttt{ind-Nat} is a natural choice when the value of a computation at the \((n + 1)\)'st stage can be expressed in terms of the value at the \(n\)'th stage \textit{and the types of these values are different}. This enables us to write algorithms like \hyperref[code:range]{range},
+In particular, \ttt{ind-Nat} is a natural choice when the value of a computation at the \((n + 1)\)'st stage can be expressed in terms of the value at the \(n\)'th stage \textit{and the types of these values are different}. This enables us to write algorithms like \hyperref[code:drop]{drop} (and hence \hyperref[code:nth-element]{nth-element}), \hyperref[code:range]{range}, \hyperref[code:compose]{compose}, \hyperref[code:args-to-vec]{args\(\to\)vec}, and \hyperref[code:apply+]{apply+}.
 \newpage
 \begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
