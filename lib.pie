@@ -216,6 +216,37 @@
                 (lambda (g v) (apply+k-1 (g (head v)) (tail v)))))))
 ;@end
 
+;@begin code zip-with
+(claim zip-with
+  (Pi
+    ((a U)
+     (b U)
+     (c U)
+     (k Nat))
+    (-> (-> a b c) (Vec a k) (Vec b k) (Vec c k))))
+(define zip-with
+  (lambda (a b c k)
+    (ind-Nat
+      k
+      (lambda (i) (-> (-> a b c) (Vec a i) (Vec b i) (Vec c i)))
+      (lambda (f v w) vecnil)
+      (lambda (k-1 almost-zip-with)
+        (lambda (f v w)
+          (vec:: (f (head v) (head w)) (almost-zip-with f (tail v) (tail w))))))))
+;@end code
+
+;@begin code zip (zip-with cons)
+(claim zip
+  (Pi
+    ((a U)
+     (b U)
+     (k Nat))
+    (-> (Vec a k) (Vec b k) (Vec (Pair a b) k))))
+(define zip
+  (lambda (a b k)
+    (zip-with a b (Pair a b) k (lambda (x y) (cons x y)))))
+;@end
+
 ;@end // section Functional Tools
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;

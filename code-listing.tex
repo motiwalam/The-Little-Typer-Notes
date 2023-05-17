@@ -223,6 +223,39 @@ This code listing was generated automatically from \href{https://github.com/thec
                 (lambda (g v) (apply+k-1 (g (head v)) (tail v)))))))
 \end{minted}
 
+\subsubsection{zip-with} \label{code:zip-with}
+\begin{minted}{scheme}
+(claim zip-with
+  (Pi
+    ((a U)
+     (b U)
+     (c U)
+     (k Nat))
+    (-> (-> a b c) (Vec a k) (Vec b k) (Vec c k))))
+(define zip-with
+  (lambda (a b c k)
+    (ind-Nat
+      k
+      (lambda (i) (-> (-> a b c) (Vec a i) (Vec b i) (Vec c i)))
+      (lambda (f v w) vecnil)
+      (lambda (k-1 almost-zip-with)
+        (lambda (f v w)
+          (vec:: (f (head v) (head w)) (almost-zip-with f (tail v) (tail w))))))))
+\end{minted}
+
+\subsubsection{zip (zip-with cons)} \label{code:zip}
+\begin{minted}{scheme}
+(claim zip
+  (Pi
+    ((a U)
+     (b U)
+     (k Nat))
+    (-> (Vec a k) (Vec b k) (Vec (Pair a b) k))))
+(define zip
+  (lambda (a b k)
+    (zip-with a b (Pair a b) k (lambda (x y) (cons x y)))))
+\end{minted}
+
 
 \subsection{Utilities}
 
