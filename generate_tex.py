@@ -4,6 +4,7 @@ from more_itertools import with_iter
 TOK_BEGIN = ';@begin '
 TOK_END = ';@end'
 TOK_COMMENT = ';;;'
+TOK_IMPORT = ';@import '
 
 class Container:
     def __init__(self):
@@ -21,8 +22,8 @@ class Wrapper(Container):
         super().__init__()
     
     def wrap(self, s) -> str:
-        raise NotImplementedError
-
+        return s
+    
     def evaluate(self) -> str:
         return self.wrap(''.join(obj.evaluate() for obj in self.objects))
     
@@ -69,8 +70,8 @@ def get_wrapper(name):
         'code': CodeSection 
     }.get(name, Wrapper)
     
-def parse(lines):
-    current = Fragment('')
+def parse(lines, supcontainer=Fragment):
+    current = supcontainer('')
     stack = [current]
     
     started = False
@@ -97,14 +98,19 @@ def parse(lines):
             stack.pop()
             current = stack[-1]
 
+        elif line.startswith(TOK_IMPORT):
+            fn = line.strip().split(' ')[1]
+            lines = with_iter(open(fn))
+            current.append(parse(lines, Wrapper))
+
         else:
             current.append(Line(line))
     
-    return current.evaluate()
+    return current
 
 def main(fn):
     lines = with_iter(open(fn))
-    print(parse(lines))
+    print(parse(lines).evaluate())
 
 if __name__ == "__main__":
     raise SystemExit(main(*sys.argv[1:]))
