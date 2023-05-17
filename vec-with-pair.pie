@@ -1,0 +1,52 @@
+; PairVec ~ Vec
+; (PairVec a k) is a list of k a's
+(claim PairVec
+  (Pi ((a U) (k Nat)) U))
+(define PairVec
+  (lambda (a k)
+    (iter-Nat k
+      Trivial ; (PairVec a 0) is Trivial
+      (lambda (u) (Pair a u)))))
+
+; pvnil is the constructor for (PairVec a 0)
+(claim pv.nil Trivial)
+(define pv.nil sole)
+
+; pv:: is identical to the builtin cons
+(claim pv:: (Pi ((a U) (k Nat)) (-> a (PairVec a k) (PairVec a (add1 k)))))
+(define pv::
+  (lambda (a k e p) (cons e p)))
+
+; pv.head is identical to the builtin car
+(claim pv.head
+  (Pi ((a U) (k Nat)) (-> (PairVec a (add1 k)) a)))
+(define pv.head
+  (lambda (a k p) (car p)))
+
+; pv.tail is identical to the builtin cdr
+(claim pv.tail
+  (Pi ((a U) (k Nat)) (-> (PairVec a (add1 k)) (PairVec a k))))
+(define pv.tail
+  (lambda (a k p) (cdr p)))
+
+; a copy of the type of ind-Vec from the Pie reference
+(claim ind-PairVec
+  (Pi ((E U)
+       (target-1 Nat)
+       (target-2 (PairVec E target-1))
+       (motive (Pi ((k Nat)) (-> (PairVec E k) U)))
+       (base (motive zero pv.nil))
+       (step (Pi ((k Nat)
+                  (e E)
+                  (es (PairVec E k)))
+                  (-> (motive k es) (motive (add1 k) (cons e es))))))
+    (motive target-1 target-2)))
+(define ind-PairVec
+  (lambda (E k v m b s)
+    ((ind-Nat
+      k
+      (lambda (i) (Pi ((w (PairVec E i))) (m i w)))
+      (lambda (w) b)
+      (lambda (k-1 almost-ind)
+        (lambda (w)
+          (s k-1 (car w) (cdr w) (almost-ind (cdr w)))))) v)))
