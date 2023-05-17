@@ -105,6 +105,41 @@
             (iter-Nat n s f))))
 ;@end
 
+;@begin code projection
+(claim __add-argument-end
+    (Pi ((k Nat) (a U)) (-> (NaryOp k a) (NaryOp (add1 k) a))))
+(define __add-argument-end
+    (lambda (k a)
+        (ind-Nat
+            k
+            (lambda (i) (-> (NaryOp i a) (NaryOp (add1 i) a)))
+            (lambda (f x) f)
+            (lambda (k-1 almost) 
+                (lambda (f x) (almost (f x)))))))
+; creates an (i + j + 1)-ary function on the type a 
+;  which returns its i'th argument (counting from 0)
+(claim projection
+    (Pi ((i Nat)
+         (j Nat)
+         (a U))
+         ;       this is just the '+' function
+         ;       -----------------------------------
+        (NaryOp (iterate-n Nat (lambda (n) (add1 n)) (add1 j) i) a)))
+(define projection
+    (lambda (i j a)
+        (ind-Nat
+            i
+            ;                    this is just the '+' function
+            ;                    -----------------------------------
+            (lambda (k) (NaryOp (iterate-n Nat (lambda (n) (add1 n)) (add1 j) k) a))
+            (ind-Nat
+                j
+                (lambda (k) (NaryOp (add1 k) a))
+                (lambda (x) x)
+                (lambda (k-1 almost) (__add-argument-end (add1 k-1) a almost)))
+            (lambda (k-1 almost) (lambda (x) almost)))))
+;@end
+
 ;@begin code compose
 ; composes a unary function from b to c with a k-ary function from a^k to b
 (claim compose
