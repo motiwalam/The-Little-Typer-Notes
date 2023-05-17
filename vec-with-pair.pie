@@ -1,5 +1,9 @@
+#lang pie
+
+;@begin code PairVec (the Vec type implemented with Pairs)
 ; PairVec ~ Vec
 ; (PairVec a k) is a list of k a's
+; it gets expanded as (Pair a (Pair a (Pair a ... (k times) Trivial)))
 (claim PairVec
   (Pi ((a U) (k Nat)) U))
 (define PairVec
@@ -41,12 +45,17 @@
                   (es (PairVec E k)))
                   (-> (motive k es) (motive (add1 k) (cons e es))))))
     (motive target-1 target-2)))
+; we use induction to create a function that can inductively eliminate
+; a k+1-length PairVec from a function that can inductively eliminate
+; a k-length Pairvec
 (define ind-PairVec
-  (lambda (E k v m b s)
-    ((ind-Nat
-      k
-      (lambda (i) (Pi ((w (PairVec E i))) (m i w)))
-      (lambda (w) b)
-      (lambda (k-1 almost-ind)
-        (lambda (w)
-          (s k-1 (car w) (cdr w) (almost-ind (cdr w)))))) v)))
+    (lambda (E target-1 target-2 motive base step)
+        ((ind-Nat
+            target-1
+            (lambda (i) (Pi ((w (PairVec E i))) (motive i w)))
+            (lambda (w) base)
+            (lambda (k-1 almost-ind)
+                (lambda (w)
+                    (step k-1 (car w) (cdr w) (almost-ind (cdr w))))))
+        target-2)))
+;@end
