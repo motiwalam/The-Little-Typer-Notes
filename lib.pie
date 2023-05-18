@@ -571,6 +571,18 @@
 
 ;@begin section Vectors
 
+;@begin code repeatvec
+(claim repeatvec
+  (Pi ((a U) (k Nat)) (-> a (Vec a k))))
+(define repeatvec
+  (lambda (a k e)
+    (ind-Nat
+      k
+      (lambda (i) (Vec a i))
+      vecnil
+      (lambda (k-1 almost) (vec:: e almost)))))
+;@end
+
 ;@begin code vec-to-lst
 (claim vec->lst (Pi ((a U) (k Nat)) (-> (Vec a k) (List a))))
 (define vec->lst
@@ -670,6 +682,50 @@
       (lambda (i x) (Vec a i))
       vecnil
       (lambda (k-1 e es ces) (appendvec a k-1 e ces)))))
+;@end
+
+;@begin code transpose
+(claim transpose
+  (Pi ((m Nat)
+       (n Nat)
+       (a U))
+    (-> (Vec (Vec a n) m) (Vec (Vec a m) n))))
+(define transpose
+  (lambda (m n a)
+    (ind-Nat
+      m
+      (lambda (i) (-> (Vec (Vec a n) i) (Vec (Vec a i) n)))
+      (lambda (w) (repeatvec (Vec a 0) n vecnil))
+      (lambda (k-1 almost-trans)
+        (ind-Nat
+          n
+          (lambda (i) (-> (Vec (Vec a i) (add1 k-1)) (Vec (Vec a (add1 k-1)) i)))
+          (lambda (w) vecnil)
+          (lambda (n-1 almost)
+            (lambda (w)
+              (vec::
+                (mapvec (Vec a (add1 n-1)) a (add1 k-1) (lambda (v) (head v)) w)
+                (almost
+                  (mapvec (Vec a (add1 n-1)) (Vec a n-1) (add1 k-1) (lambda (v) (tail v)) w))))))))))
+
+; alternate approach inspired by the python code
+;  transpose = lambda mat: tuple(zip(*mat))
+(claim transpose2
+  (Pi ((m Nat)
+       (n Nat)
+       (a U))
+    (-> (Vec (Vec a n) m) (Vec (Vec a m) n))))
+(define transpose2
+  (lambda (m n a v)
+    (ind-Vec
+      m
+      v
+      (lambda (i v) (Vec (Vec a i) n))
+      (repeatvec (Vec a 0) n vecnil)
+      (lambda (k-1 r rs almost)
+        (zip-with a (Vec a k-1) (Vec a (add1 k-1)) n 
+            (lambda (e x) (vec:: e x)) 
+            r almost)))))
 ;@end
 
 ;@end // section Vectors
