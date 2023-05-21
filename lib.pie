@@ -695,19 +695,15 @@
     (ind-Nat
       m
       (lambda (i) (-> (Vec (Vec a n) i) (Vec (Vec a i) n)))
-      (lambda (w) (repeatvec (Vec a 0) n vecnil))
-      (lambda (k-1 almost-trans)
-        (ind-Nat
-          n
-          (lambda (i) (-> (Vec (Vec a i) (add1 k-1)) (Vec (Vec a (add1 k-1)) i)))
-          (lambda (w) vecnil)
-          (lambda (n-1 almost)
-            (lambda (w)
-              (vec::
-                (mapvec (Vec a (add1 n-1)) a (add1 k-1) (lambda (v) (head v)) w)
-                (almost
-                  (mapvec (Vec a (add1 n-1)) (Vec a n-1) (add1 k-1) (lambda (v) (tail v)) w))))))))))
-
+      (lambda (M) (repeatvec (Vec a 0) n vecnil))
+      (lambda (m-1 almost-transpose)
+        (lambda (M)
+          (zip-with
+            a (Vec a m-1) (Vec a (add1 m-1))
+            n
+            (lambda (x row) (vec:: x row))
+            (head M)
+            (almost-transpose (tail M))))))))
 ; alternate approach inspired by the python code
 ;  transpose = lambda mat: tuple(zip(*mat))
 (claim transpose2
