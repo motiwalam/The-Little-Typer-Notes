@@ -792,6 +792,48 @@ This code listing was generated automatically from \href{https://github.com/thec
 \end{minted}
 
 
+\subsection{Proofs}
+
+\subsubsection{+commutes} \label{code:+commutes}
+\begin{minted}{scheme}
+; proof that (+ m n) = (+ n m) for all m, n in Nat
+(claim +0-commutes
+  (Pi ((m Nat)) (= Nat (+ m 0) (+ 0 m))))
+(define +0-commutes
+  (lambda (m)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (+ i 0) (+ 0 i)))
+      (same 0)
+      (lambda (k-1 almost) (cong almost succ)))))
+
+(claim +1-associates
+  (Pi ((m Nat) (n Nat))
+    (= Nat (+ (add1 m) n) (+ m (add1 n)))))
+(define +1-associates
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ (add1 m) i) (+ m (add1 i))))
+      (same (add1 m))
+      (lambda (n-1 almost)
+        (cong almost succ)))))
+
+(claim +commutes
+  (Pi ((m Nat) (n Nat)) (= Nat (+ m n) (+ n m))))
+(define +commutes
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ m i) (+ i m)))
+      (+0-commutes m)
+      (lambda (k-1 almost)
+        (trans
+         (cong almost succ)
+         (symm (+1-associates k-1 m)))))))
+\end{minted}
+
+
 \subsection{Miscellaneous programs}
 
 \subsubsection{Fibonacci} \label{code:Fibonacci}
