@@ -445,6 +445,32 @@ There is also \textit{strong induction}, i.e the implication: for \(S\) a set, i
 then \(\forall n \in \bb N. n \in S\).
 \\ \\
 It's well known that weak induction and strong induction are equivalent. \textcolor{red}{Does this equivalence carry over into Pie as well? Can we write a \ttt{strong-ind-Nat} eliminator, in which the result at stage \(n\) can depend on the result at any previous stage?} 
+\section{Pick a Number, Any Number}
+\subsection{Summary}
+This chapter introduces the concept of reading types as statements. To this end, we see the \ttt{=} type constructor for the first time, which encodes the idea of equality into a type. We learn about using the \ttt{=} type, its sole constructor \ttt{same}, and one of its eliminators \ttt{cong}.
+\subsection{The \ttt{=} type}
+When \ttt{X} is a type and \ttt{from}, \ttt{to} are both \ttt{X}'s, the expression \ttt{(= X from to)} is a type.
+\\ \\
+The \ttt{=} type has one constructor: \ttt{same}. Given an \ttt{e} of type \ttt{X}, \ttt{(same e)} is a \ttt{(= X e e)}.
+\\ \\
+\ttt{cong} is an eliminator for \ttt{=}. Given a \ttt{target} of type \ttt{(= X from to)}, and a function \ttt{f} of type \ttt{(\(\to\) X Y)}, \ttt{(cong target f)} returns a value of type \ttt{(= Y (f from) (f to))}. \ttt{cong} represents the well-definedness of functions; that is, if \(x = y\) then \(f(x) = f(y)\). \ttt{(cong (same x) f)} computes as \ttt{(same (f x))}.
+\subsection{Reading types as statements}
+We may think of types as statements and values as proofs of those statements. Most types we have seen so far represent quite uninteresting statements, such as \ttt{Nat}, \ttt{Atom}, \ttt{List}, and \ttt{Vec}.
+\\ \\
+The \(\Pi\) type constructor is quite interesting, as it represents the universal quantifier. That is, a type like \[\ttt{(\(\Pi\) ((n Nat)) (= Nat (+ n n) (* 2 n)))}\] represents the statement ``for all \ttt{Nat} \(n\), \ttt{(+ n n)} equals \ttt{(* 2 n)}".
+\\ \\
+The \(\to\) type constructor represents the implication; i.e \ttt{(\(\to\) X Y)} represents the statement ``if \ttt{X}, then \ttt{Y}". The connection with \(\Pi\) here is interesting; we know that \(\to\) is syntax sugar for \(\Pi\). So, we might read a \(\Pi\) type as a statement of the form \(\forall x \in X. P(x)\). Then, in a \(\to\) type, \(P\) doesn't use \(x\), so the statement is really \(\forall x \in X. P\). 
+\\ \\
+False statements, then, are types for which no values exist. An example is the type \ttt{(= Nat 3 4)}.
+\subsection{Some questions}
+\subsubsection*{Existence statements}
+\textcolor{red}{How do we represent more sophisticated existence statements?} In some sense, the basic data types like \ttt{Nat}, \ttt{Atom} etc. are existence statements, but they're too simple. \textcolor{red}{How do we something more sophisticated like \(\exists x. P(x)\)?} 
+\subsubsection*{Negation}
+\textcolor{red}{What does negation look like? How do we negate a type?}
+\subsubsection*{Judgements vs Expressions}
+The authors make a big deal of distinguishing between judgements which are ``attitudes one takes towards expressions" and what types like the \ttt{=} - which are themselves expressions - mean. I don't quite understand this distinction. \textcolor{red}{What exactly is the difference between what the \ttt{=} type says and a judgment of the form ``\(x\) is the same \(X\) as \(y\)?"} It seems like ``sameness" (in the judgement sense) is a strictly stronger condition than equality (in the \ttt{=} sense), so that two things that are the same are necessarily equal but not vice versa.
+\subsubsection*{Using proofs}
+How do we make use of a proof? For example, The \hyperref[code:concatvec]{concatvec} implementation does not work if we switch the arguments to \ttt{+} in the type; \textcolor{red}{how can we use a proof of the commutativity of \ttt{+} to make such an alternative implementation work?}
 \newpage
 \begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
