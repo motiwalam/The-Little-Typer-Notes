@@ -794,6 +794,22 @@ This code listing was generated automatically from \href{https://github.com/thec
 
 \subsection{Proofs}
 
+\subsubsection{+associates} \label{code:+associates}
+\begin{minted}{scheme}
+; proof that (+ a (+ b c)) = (+ (+ a b) c) for all a, b, c in Nat
+(claim +associates
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (+ a (+ b c)) (+ (+ a b) c))))
+(define +associates
+  (lambda (a b c)
+    (ind-Nat
+      c
+      (lambda (i) (= Nat (+ a (+ b i)) (+ (+ a b) i)))
+      (same (+ a b))
+      (lambda (k-1 almost)
+        (cong almost succ)))))
+\end{minted}
+
 \subsubsection{+commutes} \label{code:+commutes}
 \begin{minted}{scheme}
 ; proof that (+ m n) = (+ n m) for all m, n in Nat
