@@ -875,7 +875,7 @@
           (symm (*distrib-over-1 m i)))))))
 ;@end
 
-;@begin code *distributes-over+ ((right) distributivity of multiplication over addition \((a + b)c = ac + bc\))
+;@begin code *distributes-over+_right ((right) distributivity of multiplication over addition \((a + b)c = ac + bc\))
 (claim a+b_+_c+d=a+c_+_b+d
   (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
     (= Nat (+ (+ a b) (+ c d)) (+ (+ a c) (+ b d)))))
@@ -891,10 +891,10 @@
             (cong (symm (+associates c b d)) (+ a))
             (+associates a c (+ b d))))))))
 
-(claim *distributes-over+
+(claim *distributes-over+_right
   (Pi ((a Nat) (b Nat) (c Nat))
     (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))
-(define *distributes-over+
+(define *distributes-over+_right
   (lambda (a b c)
     (ind-Nat
       c
@@ -905,6 +905,21 @@
           (cong a+b_*i=a*i+b*i (+ (+ a b)))
           (a+b_+_c+d=a+c_+_b+d a b (* a i) (* b i)))))))
 ;@end
+
+;@begin code *distributes-over+_left ((left) distributivity of multiplication over addition \(a(b + c) = ab + ac\))
+(claim *distributes-over+_left
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (* a (+ b c)) (+ (* a b) (* a c)))))
+(define *distributes-over+_left
+  (lambda (a b c)
+    (trans
+      (*commutes a (+ b c))
+      (trans
+        (*distributes-over+_right b c a)
+        (trans
+         (cong (*commutes b a) (the (-> Nat Nat) (lambda (x) (+ x (* c a)))))
+         (cong (*commutes c a) (+ (* a b))))))))
+;@end 
 
 ;@end // section Proofs
 
