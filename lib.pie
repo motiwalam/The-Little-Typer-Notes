@@ -875,7 +875,7 @@
           (symm (*distrib-over-1 m i)))))))
 ;@end
 
-;@begin code *distributes-over+_right ((right) distributivity of multiplication over addition \((a + b)c = ac + bc\))
+;@begin code *distributes-over+right (right) (distributivity of multiplication over addition \((a + b)c = ac + bc\))
 (claim a+b_+_c+d=a+c_+_b+d
   (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
     (= Nat (+ (+ a b) (+ c d)) (+ (+ a c) (+ b d)))))
@@ -906,7 +906,7 @@
           (a+b_+_c+d=a+c_+_b+d a b (* a i) (* b i)))))))
 ;@end
 
-;@begin code *distributes-over+_left ((left) distributivity of multiplication over addition \(a(b + c) = ab + ac\))
+;@begin code *distributes-over+left (left) (distributivity of multiplication over addition \(a(b + c) = ab + ac\))
 (claim *distributes-over+_left
   (Pi ((a Nat) (b Nat) (c Nat))
     (= Nat (* a (+ b c)) (+ (* a b) (* a c)))))
