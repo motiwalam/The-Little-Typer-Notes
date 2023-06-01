@@ -756,7 +756,7 @@
 ;@begin section Proofs
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;@begin code +associates
+;@begin code +associates (associativity of multiplication)
 ; proof that (+ a (+ b c)) = (+ (+ a b) c) for all a, b, c in Nat
 (claim +associates
   (Pi ((a Nat) (b Nat) (c Nat))
@@ -771,7 +771,7 @@
         (cong almost succ)))))
 ;@end
 
-;@begin code +commutes
+;@begin code +commutes (commutativity of addition)
 ; proof that (+ m n) = (+ n m) for all m, n in Nat
 (claim +0-commutes
   (Pi ((m Nat)) (= Nat (+ m 0) (+ 0 m))))
@@ -807,6 +807,59 @@
         (trans
          (cong almost succ)
          (symm (+1-associates k-1 m)))))))
+;@end
+
+;@begin code *commutes (commutativity of multiplication)
+
+; the algebraic identity (a + b) + (c + d) = (c + b) + (a + d)
+(claim a+b_+_c+d=c+b_+_a+d
+  (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
+    (= Nat (+ (+ a b) (+ c d)) (+ (+ c b) (+ a d)))))
+(define a+b_+_c+d=c+b_+_a+d
+  (lambda (a b c d)
+    (trans
+      (cong (+commutes a b) (the (-> Nat Nat ) (lambda (x) (+ x (+ c d)))))
+      (trans
+        (symm (+associates b a (+ c d)))
+        (trans
+          (cong (+commutes a (+ c d)) (+ b))
+          (trans
+            (cong (symm (+associates c d a)) (+ b))
+            (trans
+              (+associates b c (+ d a))
+              (trans
+                (cong (+commutes b c) (the (-> Nat Nat) (lambda (x) (+ x (+ d a)))))
+                (cong (+commutes d a) (+ (+ c b)))))))))))
+
+; the identity (m * (n + 1)) = m + (n * m)
+(claim *distrib-over-1
+  (Pi ((m Nat) (n Nat))
+    (= Nat (* (+ n 1) m) (+ m (* n m)))))
+(define *distrib-over-1
+  (lambda (m n)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (* (+ n 1) i) (+ i (* n i))))
+      (same 0)
+      (lambda (i n+1*i=i+n*i)
+        (trans
+          (cong n+1*i=i+n*i (+ (+ n 1)))
+          (a+b_+_c+d=c+b_+_a+d n 1 i (* n i)))))))
+
+; the identity (m * n) = (n * m)
+(claim *commutes
+  (Pi ((m Nat) (n Nat))
+    (= Nat (* m n) (* n m))))
+(define *commutes
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (* m i) (* i m)))
+      (*0-commutes m)
+      (lambda (i m*i=i*m)
+        (trans
+          (cong m*i=i*m (+ m))
+          (symm (*distrib-over-1 m i)))))))
 ;@end
 
 ;@end // section Proofs
