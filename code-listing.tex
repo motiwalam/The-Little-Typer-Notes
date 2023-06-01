@@ -887,6 +887,19 @@ This code listing was generated automatically from \href{https://github.com/thec
           (cong n+1*i=i+n*i (+ (+ n 1)))
           (a+b_+_c+d=c+b_+_a+d n 1 i (* n i)))))))
 
+; m * 0 = 0 * m for all m
+(claim *0-commutes
+  (Pi ((m Nat))
+    (= Nat (* m 0) (* 0 m))))
+(define *0-commutes
+  (lambda (m)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (* i 0) (* 0 i)))
+      (same 0)
+      (lambda (k-1 almost)
+        (cong almost (+ 0))))))
+
 ; the identity (m * n) = (n * m)
 (claim *commutes
   (Pi ((m Nat) (n Nat))
