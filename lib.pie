@@ -921,6 +921,22 @@
          (cong (*commutes c a) (+ (* a b))))))))
 ;@end 
 
+;@begin code *associates (associativity of multiplication)
+(claim *associates
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (* a (* b c)) (* (* a b) c))))
+(define *associates
+  (lambda (a b c)
+    (ind-Nat
+      c
+      (lambda (i) (= Nat (* a (* b i)) (* (* a b) i)))
+      (same 0)
+      (lambda (i a*_b*i=a*b_*i)
+        (trans
+          (*distributes-over+_left a b (* b i))
+          (cong a*_b*i=a*b_*i (+ (* a b))))))))
+;@end
+
 ;@end // section Proofs
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
