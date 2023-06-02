@@ -482,6 +482,225 @@ This code listing was generated automatically from \href{https://github.com/thec
 \end{minted}
 
 
+\subsection{Proofs}
+
+\subsubsection{+associates (associativity of multiplication)} \label{code:+associates}
+\begin{minted}{scheme}
+; proof that (+ a (+ b c)) = (+ (+ a b) c) for all a, b, c in Nat
+(claim +associates
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (+ a (+ b c)) (+ (+ a b) c))))
+(define +associates
+  (lambda (a b c)
+    (ind-Nat
+      c
+      (lambda (i) (= Nat (+ a (+ b i)) (+ (+ a b) i)))
+      (same (+ a b))
+      (lambda (k-1 almost)
+        (cong almost succ)))))
+\end{minted}
+
+\subsubsection{+commutes (commutativity of addition)} \label{code:+commutes}
+\begin{minted}{scheme}
+; proof that (+ m n) = (+ n m) for all m, n in Nat
+(claim +0-commutes
+  (Pi ((m Nat)) (= Nat (+ m 0) (+ 0 m))))
+(define +0-commutes
+  (lambda (m)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (+ i 0) (+ 0 i)))
+      (same 0)
+      (lambda (k-1 almost) (cong almost succ)))))
+
+(claim +1-associates
+  (Pi ((m Nat) (n Nat))
+    (= Nat (+ (add1 m) n) (+ m (add1 n)))))
+(define +1-associates
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ (add1 m) i) (+ m (add1 i))))
+      (same (add1 m))
+      (lambda (n-1 almost)
+        (cong almost succ)))))
+
+(claim +commutes
+  (Pi ((m Nat) (n Nat)) (= Nat (+ m n) (+ n m))))
+(define +commutes
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ m i) (+ i m)))
+      (+0-commutes m)
+      (lambda (k-1 almost)
+        (trans
+         (cong almost succ)
+         (symm (+1-associates k-1 m)))))))
+\end{minted}
+
+\subsubsection{*commutes (commutativity of multiplication)} \label{code:*commutes}
+\begin{minted}{scheme}
+
+; the algebraic identity (a + b) + (c + d) = (c + b) + (a + d)
+(claim a+b_+_c+d=c+b_+_a+d
+  (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
+    (= Nat (+ (+ a b) (+ c d)) (+ (+ c b) (+ a d)))))
+(define a+b_+_c+d=c+b_+_a+d
+  (lambda (a b c d)
+    (trans
+      (cong (+commutes a b) (the (-> Nat Nat ) (lambda (x) (+ x (+ c d)))))
+      (trans
+        (symm (+associates b a (+ c d)))
+        (trans
+          (cong (+commutes a (+ c d)) (+ b))
+          (trans
+            (cong (symm (+associates c d a)) (+ b))
+            (trans
+              (+associates b c (+ d a))
+              (trans
+                (cong (+commutes b c) (the (-> Nat Nat) (lambda (x) (+ x (+ d a)))))
+                (cong (+commutes d a) (+ (+ c b)))))))))))
+
+; the identity (m * (n + 1)) = m + (n * m)
+(claim *distrib-over-1
+  (Pi ((m Nat) (n Nat))
+    (= Nat (* (+ n 1) m) (+ m (* n m)))))
+(define *distrib-over-1
+  (lambda (m n)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (* (+ n 1) i) (+ i (* n i))))
+      (same 0)
+      (lambda (i n+1*i=i+n*i)
+        (trans
+          (cong n+1*i=i+n*i (+ (+ n 1)))
+          (a+b_+_c+d=c+b_+_a+d n 1 i (* n i)))))))
+
+; m * 0 = 0 * m for all m
+(claim *0-commutes
+  (Pi ((m Nat))
+    (= Nat (* m 0) (* 0 m))))
+(define *0-commutes
+  (lambda (m)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (* i 0) (* 0 i)))
+      (same 0)
+      (lambda (k-1 almost)
+        (cong almost (+ 0))))))
+
+; the identity (m * n) = (n * m)
+(claim *commutes
+  (Pi ((m Nat) (n Nat))
+    (= Nat (* m n) (* n m))))
+(define *commutes
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (* m i) (* i m)))
+      (*0-commutes m)
+      (lambda (i m*i=i*m)
+        (trans
+          (cong m*i=i*m (+ m))
+          (symm (*distrib-over-1 m i)))))))
+\end{minted}
+
+\subsubsection{*distributes-over+right (right distributivity of multiplication over addition \((a + b)c = ac + bc\))} \label{code:*distributes-over+right}
+\begin{minted}{scheme}
+(claim a+b_+_c+d=a+c_+_b+d
+  (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
+    (= Nat (+ (+ a b) (+ c d)) (+ (+ a c) (+ b d)))))
+(define a+b_+_c+d=a+c_+_b+d
+  (lambda (a b c d)
+    (trans
+      (symm (+associates a b (+ c d)))
+      (trans
+        (cong (+associates b c d) (+ a))
+        (trans
+          (cong (+commutes b c) (the (-> Nat Nat) (lambda (x) (+ a (+ x d)))))
+          (trans
+            (cong (symm (+associates c b d)) (+ a))
+            (+associates a c (+ b d))))))))
+
+(claim *distributes-over+_right
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))
+(define *distributes-over+_right
+  (lambda (a b c)
+    (ind-Nat
+      c
+      (lambda (i) (= Nat (* (+ a b) i) (+ (* a i) (* b i))))
+      (same 0)
+      (lambda (i a+b_*i=a*i+b*i)
+        (trans
+          (cong a+b_*i=a*i+b*i (+ (+ a b)))
+          (a+b_+_c+d=a+c_+_b+d a b (* a i) (* b i)))))))
+\end{minted}
+
+\subsubsection{*distributes-over+left (left distributivity of multiplication over addition \(a(b + c) = ab + ac\))} \label{code:*distributes-over+left}
+\begin{minted}{scheme}
+(claim *distributes-over+_left
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (* a (+ b c)) (+ (* a b) (* a c)))))
+(define *distributes-over+_left
+  (lambda (a b c)
+    (trans
+      (*commutes a (+ b c))
+      (trans
+        (*distributes-over+_right b c a)
+        (trans
+         (cong (*commutes b a) (the (-> Nat Nat) (lambda (x) (+ x (* c a)))))
+         (cong (*commutes c a) (+ (* a b))))))))
+\end{minted}
+
+\subsubsection{*associates (associativity of multiplication)} \label{code:*associates}
+\begin{minted}{scheme}
+(claim *associates
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (* a (* b c)) (* (* a b) c))))
+(define *associates
+  (lambda (a b c)
+    (ind-Nat
+      c
+      (lambda (i) (= Nat (* a (* b i)) (* (* a b) i)))
+      (same 0)
+      (lambda (i a*_b*i=a*b_*i)
+        (trans
+          (*distributes-over+_left a b (* b i))
+          (cong a*_b*i=a*b_*i (+ (* a b))))))))
+\end{minted}
+
+\subsubsection{n+n=2n} \label{code:n+n=2n}
+\begin{minted}{scheme}
+(claim n+n=2n
+  (Pi ((n Nat))
+    (= Nat (+ n n) (* 2 n))))
+(define n+n=2n
+  (lambda (n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ i i) (* 2 i)))
+      (same 0)
+      (lambda (i i+i=2i)
+        (trans
+         (cong (+commutes i 1) (the (-> Nat Nat) (lambda (x) (+ x (+ i 1)))))
+         (trans
+          (cong (+commutes i 1) (+ (+ 1 i)))  ; (1 + i) + (i + 1) = (1 + i) + (1 + i)
+          (trans
+           (symm (+associates 1 i (+ 1 i)))   ; (1 + i) + (i + 1) = 1 + (i + (i + 1))
+           (trans
+            (cong (+commutes i (+ 1 i)) (+ 1))
+            (trans
+             (+associates 1 (+ 1 i) i)
+             (trans
+              (cong (+associates 1 1 i) (the (-> Nat Nat) (lambda (x) (+ x i))))
+              (trans
+               (symm (+associates (+ 1 1) i i))
+               (cong i+i=2i (+ (+ 1 1))))))))))))))
+\end{minted}
+
+
 \subsection{Lists}
 
 \subsubsection{prepend (:: or cons)} \label{code:prepend}
@@ -766,6 +985,28 @@ This code listing was generated automatically from \href{https://github.com/thec
             r almost)))))
 \end{minted}
 
+(claim double-gets-next-power2
+  (Pi ((n Nat)) (= Nat (^ 2 (add1 n)) (+ (^ 2 n) (^ 2 n)))))
+(define double-gets-next-power2
+  (lambda (n)
+    (symm (n+n=2n (^ 2 n)))))
+
+(claim subsets
+  (Pi ((a U) (k Nat))
+    (-> (Vec a k) (Vec (List a) (^ 2 k)))))
+(define subsets
+  (lambda (a k v)
+    (ind-Vec k v
+      (lambda (i w) (Vec (List a) (^ 2 i)))
+      (vec:: nil vecnil)
+      (lambda (i x xs subsets-of-xs)
+        (replace
+          (symm (double-gets-next-power2 i))
+          (lambda (j) (Vec (List a) j))
+          (concatvec (List a) (^ 2 i) (^ 2 i)
+            (mapvec (List a) (List a) (^ 2 i) (lambda (l) (:: x l)) subsets-of-xs)
+            subsets-of-xs))))))
+
 
 
 \subsection{Control Flow}
@@ -789,196 +1030,6 @@ This code listing was generated automatically from \href{https://github.com/thec
       cs
       else
       (lambda (x xs cond-xs) (if a (car x) (cdr x) cond-xs)))))
-\end{minted}
-
-
-\subsection{Proofs}
-
-\subsubsection{+associates (associativity of multiplication)} \label{code:+associates}
-\begin{minted}{scheme}
-; proof that (+ a (+ b c)) = (+ (+ a b) c) for all a, b, c in Nat
-(claim +associates
-  (Pi ((a Nat) (b Nat) (c Nat))
-    (= Nat (+ a (+ b c)) (+ (+ a b) c))))
-(define +associates
-  (lambda (a b c)
-    (ind-Nat
-      c
-      (lambda (i) (= Nat (+ a (+ b i)) (+ (+ a b) i)))
-      (same (+ a b))
-      (lambda (k-1 almost)
-        (cong almost succ)))))
-\end{minted}
-
-\subsubsection{+commutes (commutativity of addition)} \label{code:+commutes}
-\begin{minted}{scheme}
-; proof that (+ m n) = (+ n m) for all m, n in Nat
-(claim +0-commutes
-  (Pi ((m Nat)) (= Nat (+ m 0) (+ 0 m))))
-(define +0-commutes
-  (lambda (m)
-    (ind-Nat
-      m
-      (lambda (i) (= Nat (+ i 0) (+ 0 i)))
-      (same 0)
-      (lambda (k-1 almost) (cong almost succ)))))
-
-(claim +1-associates
-  (Pi ((m Nat) (n Nat))
-    (= Nat (+ (add1 m) n) (+ m (add1 n)))))
-(define +1-associates
-  (lambda (m n)
-    (ind-Nat
-      n
-      (lambda (i) (= Nat (+ (add1 m) i) (+ m (add1 i))))
-      (same (add1 m))
-      (lambda (n-1 almost)
-        (cong almost succ)))))
-
-(claim +commutes
-  (Pi ((m Nat) (n Nat)) (= Nat (+ m n) (+ n m))))
-(define +commutes
-  (lambda (m n)
-    (ind-Nat
-      n
-      (lambda (i) (= Nat (+ m i) (+ i m)))
-      (+0-commutes m)
-      (lambda (k-1 almost)
-        (trans
-         (cong almost succ)
-         (symm (+1-associates k-1 m)))))))
-\end{minted}
-
-\subsubsection{*commutes (commutativity of multiplication)} \label{code:*commutes}
-\begin{minted}{scheme}
-
-; the algebraic identity (a + b) + (c + d) = (c + b) + (a + d)
-(claim a+b_+_c+d=c+b_+_a+d
-  (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
-    (= Nat (+ (+ a b) (+ c d)) (+ (+ c b) (+ a d)))))
-(define a+b_+_c+d=c+b_+_a+d
-  (lambda (a b c d)
-    (trans
-      (cong (+commutes a b) (the (-> Nat Nat ) (lambda (x) (+ x (+ c d)))))
-      (trans
-        (symm (+associates b a (+ c d)))
-        (trans
-          (cong (+commutes a (+ c d)) (+ b))
-          (trans
-            (cong (symm (+associates c d a)) (+ b))
-            (trans
-              (+associates b c (+ d a))
-              (trans
-                (cong (+commutes b c) (the (-> Nat Nat) (lambda (x) (+ x (+ d a)))))
-                (cong (+commutes d a) (+ (+ c b)))))))))))
-
-; the identity (m * (n + 1)) = m + (n * m)
-(claim *distrib-over-1
-  (Pi ((m Nat) (n Nat))
-    (= Nat (* (+ n 1) m) (+ m (* n m)))))
-(define *distrib-over-1
-  (lambda (m n)
-    (ind-Nat
-      m
-      (lambda (i) (= Nat (* (+ n 1) i) (+ i (* n i))))
-      (same 0)
-      (lambda (i n+1*i=i+n*i)
-        (trans
-          (cong n+1*i=i+n*i (+ (+ n 1)))
-          (a+b_+_c+d=c+b_+_a+d n 1 i (* n i)))))))
-
-; m * 0 = 0 * m for all m
-(claim *0-commutes
-  (Pi ((m Nat))
-    (= Nat (* m 0) (* 0 m))))
-(define *0-commutes
-  (lambda (m)
-    (ind-Nat
-      m
-      (lambda (i) (= Nat (* i 0) (* 0 i)))
-      (same 0)
-      (lambda (k-1 almost)
-        (cong almost (+ 0))))))
-
-; the identity (m * n) = (n * m)
-(claim *commutes
-  (Pi ((m Nat) (n Nat))
-    (= Nat (* m n) (* n m))))
-(define *commutes
-  (lambda (m n)
-    (ind-Nat
-      n
-      (lambda (i) (= Nat (* m i) (* i m)))
-      (*0-commutes m)
-      (lambda (i m*i=i*m)
-        (trans
-          (cong m*i=i*m (+ m))
-          (symm (*distrib-over-1 m i)))))))
-\end{minted}
-
-\subsubsection{*distributes-over+right (right distributivity of multiplication over addition \((a + b)c = ac + bc\))} \label{code:*distributes-over+right}
-\begin{minted}{scheme}
-(claim a+b_+_c+d=a+c_+_b+d
-  (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
-    (= Nat (+ (+ a b) (+ c d)) (+ (+ a c) (+ b d)))))
-(define a+b_+_c+d=a+c_+_b+d
-  (lambda (a b c d)
-    (trans
-      (symm (+associates a b (+ c d)))
-      (trans
-        (cong (+associates b c d) (+ a))
-        (trans
-          (cong (+commutes b c) (the (-> Nat Nat) (lambda (x) (+ a (+ x d)))))
-          (trans
-            (cong (symm (+associates c b d)) (+ a))
-            (+associates a c (+ b d))))))))
-
-(claim *distributes-over+_right
-  (Pi ((a Nat) (b Nat) (c Nat))
-    (= Nat (* (+ a b) c) (+ (* a c) (* b c)))))
-(define *distributes-over+_right
-  (lambda (a b c)
-    (ind-Nat
-      c
-      (lambda (i) (= Nat (* (+ a b) i) (+ (* a i) (* b i))))
-      (same 0)
-      (lambda (i a+b_*i=a*i+b*i)
-        (trans
-          (cong a+b_*i=a*i+b*i (+ (+ a b)))
-          (a+b_+_c+d=a+c_+_b+d a b (* a i) (* b i)))))))
-\end{minted}
-
-\subsubsection{*distributes-over+left (left distributivity of multiplication over addition \(a(b + c) = ab + ac\))} \label{code:*distributes-over+left}
-\begin{minted}{scheme}
-(claim *distributes-over+_left
-  (Pi ((a Nat) (b Nat) (c Nat))
-    (= Nat (* a (+ b c)) (+ (* a b) (* a c)))))
-(define *distributes-over+_left
-  (lambda (a b c)
-    (trans
-      (*commutes a (+ b c))
-      (trans
-        (*distributes-over+_right b c a)
-        (trans
-         (cong (*commutes b a) (the (-> Nat Nat) (lambda (x) (+ x (* c a)))))
-         (cong (*commutes c a) (+ (* a b))))))))
-\end{minted}
-
-\subsubsection{*associates (associativity of multiplication)} \label{code:*associates}
-\begin{minted}{scheme}
-(claim *associates
-  (Pi ((a Nat) (b Nat) (c Nat))
-    (= Nat (* a (* b c)) (* (* a b) c))))
-(define *associates
-  (lambda (a b c)
-    (ind-Nat
-      c
-      (lambda (i) (= Nat (* a (* b i)) (* (* a b) i)))
-      (same 0)
-      (lambda (i a*_b*i=a*b_*i)
-        (trans
-          (*distributes-over+_left a b (* b i))
-          (cong a*_b*i=a*b_*i (+ (* a b))))))))
 \end{minted}
 
 
