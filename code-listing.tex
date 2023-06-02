@@ -985,6 +985,8 @@ This code listing was generated automatically from \href{https://github.com/thec
             r almost)))))
 \end{minted}
 
+\subsubsection{subsets} \label{code:subsets}
+\begin{minted}{scheme}
 (claim double-gets-next-power2
   (Pi ((n Nat)) (= Nat (^ 2 (add1 n)) (+ (^ 2 n) (^ 2 n)))))
 (define double-gets-next-power2
@@ -1006,6 +1008,7 @@ This code listing was generated automatically from \href{https://github.com/thec
           (concatvec (List a) (^ 2 i) (^ 2 i)
             (mapvec (List a) (List a) (^ 2 i) (lambda (l) (:: x l)) subsets-of-xs)
             subsets-of-xs))))))
+\end{minted}
 
 
 

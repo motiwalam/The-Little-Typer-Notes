@@ -939,7 +939,7 @@
             r almost)))))
 ;@end
 
-;@begin subsets
+;@begin code subsets
 (claim double-gets-next-power2
   (Pi ((n Nat)) (= Nat (^ 2 (add1 n)) (+ (^ 2 n) (^ 2 n)))))
 (define double-gets-next-power2
