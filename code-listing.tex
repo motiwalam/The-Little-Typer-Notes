@@ -1112,6 +1112,45 @@ This code listing was generated automatically from \href{https://github.com/thec
          (lambda (n) (iter-Nat (succ n) 1 almost-ack))))))
 \end{minted}
 
+\subsubsection{replace-can-symm (symm in terms of replace)} \label{code:replace-can-symm}
+\begin{minted}{scheme}
+(claim replace-can-symm
+  (Pi ((X U) (a X) (b X))
+    (-> (= X a b) (= X b a))))
+(define replace-can-symm
+  (lambda (X a b a=b)
+    (replace
+      a=b
+      (lambda (x) (= X x a))
+      (same a))))
+\end{minted}
+
+\subsubsection{replace-can-cong (cong in terms of replace)} \label{code:replace-can-cong}
+\begin{minted}{scheme}
+(claim replace-can-cong
+  (Pi ((X U) (Y U) (from X) (to X) (f (-> X Y)))
+    (-> (= X from to) (= Y (f from) (f to)))))
+(define replace-can-cong
+  (lambda (X Y from to f from=to)
+    (replace
+      from=to
+      (lambda (x) (= Y (f from) (f x)))
+      (same (f from)))))
+\end{minted}
+
+\subsubsection{replace-can-trans (trans in terms of replace)} \label{code:replace-can-trans}
+\begin{minted}{scheme}
+(claim replace-can-trans
+  (Pi ((X U) (from X) (middle X) (to X))
+    (-> (= X from middle) (= X middle to) (= X from to))))
+(define replace-can-trans
+  (lambda (X from middle to from=middle middle=to)
+    (replace
+      middle=to
+      (lambda (x) (= X from x))
+      from=middle)))
+\end{minted}
+
 
 \subsubsection{PairVec (the Vec type implemented with Pairs)} \label{code:PairVec}
 \begin{minted}{scheme}
