@@ -471,6 +471,35 @@ False statements, then, are types for which no values exist. An example is the t
 The authors make a big deal of distinguishing between judgements which are ``attitudes one takes towards expressions" and what types like the \ttt{=} - which are themselves expressions - mean. I don't quite understand this distinction. \textcolor{red}{What exactly is the difference between what the \ttt{=} type says and a judgment of the form ``\(x\) is the same \(X\) as \(y\)?"} It seems like ``sameness" (in the judgement sense) is a strictly stronger condition than equality (in the \ttt{=} sense), so that two things that are the same are necessarily equal but not vice versa.
 \subsubsection*{Using proofs}
 How do we make use of a proof? For example, The \hyperref[code:concatvec]{concatvec} implementation does not work if we switch the arguments to \ttt{+} in the type; \textcolor{red}{how can we use a proof of the commutativity of \ttt{+} to make such an alternative implementation work?}
+\section{Double Your Money, Get Twice as Much}
+\subsection{Summary}
+This chapter focuses on a more general purpose eliminator for the \ttt{=} type, from which (almost) all others can be derived: \ttt{replace}. The \ttt{replace} eliminator functions as an advanced type annotation, allowing us to describe the same value with two different types which are equal but may have different normal forms.
+\subsection{The \ttt{replace} eliminator}
+For a type \ttt{X}, given a \ttt{target} of type \ttt{(= X from to)}, a \ttt{motive} of type \ttt{(\(\to\) X \(\mathcal{U}\))}, and a \ttt{base} of type \ttt{(motive from)}, the expression \(E \coloneqq \) \ttt{(replace target motive base)} has the type \ttt{(motive to)}. The \textit{value} of \(E\) is the same as the \textit{value} of \ttt{base}; all that changes is the type.
+\\ \\
+There are different ways of thinking about \ttt{replace}. From the book, \ttt{replace} embodies the principle of reasoning: \[
+    \text{``if \(x = y\) and \(P(x)\) is true for some predicate \(P\), then \(P(y)\) is true."}
+\]
+In \ttt{replace}, the proof that \(x = y\) is given as \ttt{target}, the predicate \(P\) is given as \ttt{motive}, and the proof that \(P(x)\) is true is given as \ttt{base}.
+\\ \\
+Alternatively, \ttt{replace} embodies the principle: \[
+    \text{``if \(x\) is of type \(A\), and \(A\) is an equal type to \(B\), then \(x\) is also of type \(B\)"}
+\]
+This way of thinking about \ttt{replace} follows the exact function/mechanics of \ttt{replace} much more closely. However, it does beg the question, \textcolor{red}{what does it mean for two types to be \textit{equal}?} This is not immediately obvious, as we have seen two distinct ways of thinking about types which yield distinct answers to this question; if we think about types as descriptors of values, then we might say type \(A\) is equal to type \(B\) if every value described by \(A\) is also described by \(B\) and vice versa. On the other hand, if we think about types as (logical) statements, we might say type \(A\) equals type \(B\) if \(A \to B\) and \(B \to A\). Given that implication is modelled by the existence of functions, this latter definition is clearly inadequate, as functions from \ttt{Nat} to \ttt{Atom} and vice versa exist, but \ttt{Nat} and \ttt{Atom} are not the same type. So, \textcolor{red}{how do we define equality on types in a way that agrees with both ways of thinking about types?}
+\subsection{The \ttt{symm} eliminator}
+The \ttt{symm} eliminator embodies the symmetry of the equality relation; given a \ttt{target} of type \ttt{(= X from to)}, \ttt{(symm target)} yields a value of type \ttt{(= X to from)}.
+\subsection{Superfluence of \ttt{cong} with respect to \ttt{replace}}
+Let \(X, Y\) be types. Let \(f : X \to Y\). Let \(x, y\) be values of type \(X\) and suppose \(x = y\). Define the predicate \(P\) on \(X\) by \(P(a) = (f(x) = f(a))\). Clearly, \(P(x)\) is true and since \(x = y\), it follows that \(P(y)\) is also true, so that \(f(x) = f(y)\). This yields a definition of \ttt{cong} in terms of \ttt{replace}, which can be seen \hyperref[code:replace-can-cong]{here}.
+\subsection{Superfluence of \ttt{symm} with respect to \ttt{replace}}
+Let \(X\) be a type and \(x, y\) be values of type \(X\). Suppose \(x = y\). Define the predicate \(P\) on \(X\) by \(P(a) = (a = x)\). Clearly, \(P(x)\) is true, and since \(x = y\), it follows that \(P(y)\) is also true, so that \(y = x\). This yields a definition of \ttt{symm} in terms of \ttt{replace}, which can be seen \hyperref[code:replace-can-symm]{here}.
+\subsection{Superfluence of \ttt{trans} with respect to \ttt{replace}}
+The \ttt{trans} eliminator is not discussed in the book at all, so we might as well discuss it here. Given a \ttt{target-1} of type \ttt{(= from middle)} and a \ttt{target-2} of type \ttt{(= middle to)}, \ttt{(trans target-1 target-2)} gives a value of type \ttt{(= from to)}. In other words, \ttt{trans} embodies the transitivity of the equality relation.
+\\ \\
+Let \(X\) be a type. Let \(x, y, z\) be values of type \(X\) and suppose that \(x = y\) and \(y = z\). Define the predicate \(P\) on \(X\) by \(P(a) = (x = a)\). Now, since \(x = y\), \(P(y)\) is true. Since \(y = z\), it follows that \(P(z)\) is also true, and hence \(x = z\). This yields a definition of \ttt{trans} in terms of \ttt{replace}, which can be found \hyperref[code:replace-can-trans]{here}.
+\subsection{Limitations of \ttt{replace}?}
+\ttt{replace} is much more powerful than every eliminator for \ttt{=} except, perhaps, for one: \ttt{ind-=}, which is not discussed in the book but is present in the Pie reference online. \textcolor{red}{Is \ttt{ind-=} strictly stronger than \ttt{replace}? If so, how/why?} 
+\\ \\
+More generally, \textcolor{red}{what can \ttt{replace} \textit{not} do?}.
 \newpage
 \begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
