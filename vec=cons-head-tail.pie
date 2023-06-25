@@ -1,0 +1,141 @@
+#lang pie
+
+; a Vec type implemented in with pairs
+; vecnil is represented as sole
+; (vec:: x xs) where xs is a (Vec a k)
+; is represented by (cons x ps) where ps is the (PairVec a k) representing xs
+(claim PairVec
+  (Pi ((a U) (k Nat)) U))
+(define PairVec
+  (lambda (a k)
+    (iter-Nat k
+      Trivial 
+      (lambda (u) (Pair a u)))))
+
+(claim pv.nil Trivial)
+(define pv.nil sole)
+
+; the equivalent to ind-Vec for the PairVec type
+(claim ind-PairVec
+  (Pi ((E U)
+       (target-1 Nat)
+       (target-2 (PairVec E target-1))
+       (motive (Pi ((k Nat)) (-> (PairVec E k) U)))
+       (base (motive zero pv.nil))
+       (step (Pi ((k Nat)
+                  (e E)
+                  (es (PairVec E k)))
+                  (-> (motive k es) (motive (add1 k) (cons e es))))))
+    (motive target-1 target-2)))
+(define ind-PairVec
+    (lambda (E target-1 target-2 motive base step)
+        ((ind-Nat
+            target-1
+            (lambda (i) (Pi ((w (PairVec E i))) (motive i w)))
+            (lambda (w) base)
+            (lambda (k-1 almost-ind)
+                (lambda (w)
+                    (step k-1 (car w) (cdr w) (almost-ind (cdr w))))))
+        target-2)))
+
+(claim vec->pairvec
+  (Pi ((a U) (k Nat)) (-> (Vec a k) (PairVec a k))))
+(define vec->pairvec
+  (lambda (a k v)
+    (ind-Vec
+      k v
+      (lambda (i v) (PairVec a i))
+      pv.nil
+      (lambda (i x xs almost) (cons x almost)))))
+
+(claim pairvec->vec
+  (Pi ((a U) (k Nat)) (-> (PairVec a k) (Vec a k))))
+(define pairvec->vec
+  (lambda (a k v)
+    (ind-PairVec a
+      k v
+      (lambda (i w) (Vec a i))
+      vecnil
+      (lambda (k x xs almost) (vec:: x almost)))))
+
+; proof that pairvec->vec is a left inverse for vec->pairvec
+(claim vec=vec->pairvec->vec
+  (Pi ((a U) (k Nat) (v (Vec a k))) (= (Vec a k) v (pairvec->vec a k (vec->pairvec a k v)))))
+(define vec=vec->pairvec->vec
+  (lambda (a k v)
+    (ind-Vec
+      k v
+      (lambda (i w) (= (Vec a i) w (pairvec->vec a i (vec->pairvec a i w))))
+      (same vecnil)
+      (lambda (k x xs almost)
+        (cong almost
+          (the (-> (Vec a k) (Vec a (add1 k))) (lambda (v) (vec:: x v))))))))
+
+; proof that for all w, if w = (vec:: h t) for some h, t, then (head w) = h
+(claim head=
+  (Pi
+    ((a U)
+     (k Nat)
+     (w (Vec a (add1 k)))
+     (exists (Sigma ((h a) (t (Vec a k))) (= (Vec a (add1 k)) w (vec:: h t)))))
+    (= a (head w) (car exists))))
+(define head=
+  (lambda (a k w exists)
+    (cong (cdr (cdr exists))
+      (the (-> (Vec a (add1 k)) a) (lambda (v) (head v))))))
+
+; proof that for all w, if w = (vec:: h t) for some h, t, then (tail w) = t
+(claim tail=
+  (Pi
+    ((a U)
+     (k Nat)
+     (w (Vec a (add1 k)))
+     (exists (Sigma ((h a) (t (Vec a k))) (= (Vec a (add1 k)) w (vec:: h t)))))
+    (= (Vec a k) (tail w) (car (cdr exists)))))
+(define tail=
+  (lambda (a k w exists)
+    (cong (cdr (cdr exists))
+      (the (-> (Vec a (add1 k)) (Vec a k)) (lambda (v) (tail v))))))
+
+; proof that for all w, if w = (vec:: h t) for some h, t, then w = (vec:: (head w) (tail w))
+(claim exists-head-tail->=cons-head-tail
+  (Pi
+    ((a U)
+     (k Nat)
+     (w (Vec a (add1 k))))
+    (-> (Sigma ((h a) (t (Vec a k))) (= (Vec a (add1 k)) w (vec:: h t)))
+        (= (Vec a (add1 k)) w (vec:: (head w) (tail w))))))
+(define exists-head-tail->=cons-head-tail
+  (lambda (a k w ht)
+    (replace
+      (symm (tail= a k w ht))
+      (lambda (t) (= (Vec a (add1 k)) w (vec:: (head w) t)))
+      (replace
+        (symm (head= a k w ht)) ; proof that h = (head w)
+        (lambda (h) (= (Vec a (add1 k)) w (vec:: h (car (cdr ht)))))
+        (cdr (cdr ht))))))
+
+; proof that for all w of positive length, w = (vec:: h t) for some h, t
+(claim exists-ht
+  (Pi
+    ((a U)
+     (k Nat)
+     (w (Vec a (add1 k))))
+    (Sigma ((h a) (t (Vec a k))) (= (Vec a (add1 k)) w (vec:: h t)))))
+(define exists-ht
+  (lambda (a k w)
+    (cons (car (vec->pairvec a (add1 k) w))
+          (cons
+            (pairvec->vec a k (cdr (vec->pairvec a (add1 k) w)))
+            (vec=vec->pairvec->vec a (add1 k) w)))))
+
+; yay!!
+(claim vec=vec::head-tail
+  (Pi ((a U) (k Nat) (v (Vec a (add1 k))))
+    (= (Vec a (add1 k)) v (vec:: (head v) (tail v)))))
+(define vec=vec::head-tail
+  (lambda (a k v)
+    (exists-head-tail->=cons-head-tail
+      a k v
+      (exists-ht a k v))))
+  
