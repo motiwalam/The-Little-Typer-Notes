@@ -482,7 +482,7 @@ This code listing was generated automatically from \href{https://github.com/thec
 \end{minted}
 
 
-\subsection{Proofs}
+\subsection{Proofs (Arithmetic)}
 
 \subsubsection{+associates (associativity of multiplication)} \label{code:+associates}
 \begin{minted}{scheme}
@@ -818,6 +818,24 @@ This code listing was generated automatically from \href{https://github.com/thec
       (lambda (i) (Vec a (length a i)))
       vecnil
       (lambda (x xs vxs) (vec:: x vxs)))))
+\end{minted}
+
+\subsection{Proofs (Lists)}
+\subsubsection{map-commutes-with-compose} \label{code:map-commutes-with-compose}
+\begin{minted}{scheme}
+(claim map-commute-compose
+  (Pi
+    ((a U) (b U) (c U)
+     (l (List a)) (f (-> a b)) (g (-> b c)))
+    (= (List c) (map a c (lambda (x) (g (f x))) l) (map b c g (map a b f l)))))
+(define map-commute-compose
+  (lambda (a b c l f g)
+    (ind-List
+      l
+      (lambda (i) (= (List c) (map a c (lambda (x) (g (f x))) i) (map b c g (map a b f i))))
+      (same nil)
+      (lambda (x xs almost)
+        (cong almost (the (-> (List c) (List c)) (lambda (v) (:: (g (f x)) v))))))))
 \end{minted}
 
 \subsection{Vectors}

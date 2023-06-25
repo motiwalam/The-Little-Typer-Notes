@@ -459,7 +459,7 @@
 ;@end // section logic
 
 ;;;;;;;;;;;;;;;;;;;;;;
-;@begin section Proofs
+;@begin section Proofs (Arithmetic)
 ;;;;;;;;;;;;;;;;;;;;;;
 
 ;@begin code +associates (associativity of multiplication)
@@ -671,7 +671,7 @@
                (cong i+i=2i (+ (+ 1 1))))))))))))))
 ;@end
 
-;@end // section Proofs
+;@end // section Proofs (Arithmetic)
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;@begin section Lists
@@ -783,6 +783,24 @@
       vecnil
       (lambda (x xs vxs) (vec:: x vxs)))))
 ;@end
+
+;@begin section Proofs (Lists)
+;@begin code map-commutes-with-compose
+(claim map-commute-compose
+  (Pi
+    ((a U) (b U) (c U)
+     (l (List a)) (f (-> a b)) (g (-> b c)))
+    (= (List c) (map a c (lambda (x) (g (f x))) l) (map b c g (map a b f l)))))
+(define map-commute-compose
+  (lambda (a b c l f g)
+    (ind-List
+      l
+      (lambda (i) (= (List c) (map a c (lambda (x) (g (f x))) i) (map b c g (map a b f i))))
+      (same nil)
+      (lambda (x xs almost)
+        (cong almost (the (-> (List c) (List c)) (lambda (v) (:: (g (f x)) v))))))))
+;@end
+;@end // section Proofs (Lists)
 
 ;@begin section Vectors
 
