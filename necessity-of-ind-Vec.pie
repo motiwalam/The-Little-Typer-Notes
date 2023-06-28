@@ -1,0 +1,81 @@
+#lang pie
+
+; an identity on the Vec type
+; what's important to note here is that the normal form
+; of (id-Vec a k v) is not simply v
+(claim id-Vec
+  (Pi ((a U) (k Nat))
+    (-> (Vec a k) (Vec a k))))
+(define id-Vec
+  (lambda (a k v)
+    (ind-Vec
+      k v
+      (lambda (i w) (Vec a i))
+      vecnil
+      (lambda (i x xs almost)
+        (vec:: x almost)))))
+
+; we can prove that id-Vec is an identity by using ind-Vec
+(claim vec=id-Vec_ind-Vec
+  (Pi ((a U) (k Nat) (v (Vec a k)))
+    (= (Vec a k) v (id-Vec a k v))))
+(define vec=id-Vec_ind-Vec
+  (lambda (a k v)
+    (ind-Vec
+      k v
+      (lambda (i w) (= (Vec a i) w (id-Vec a i w)))
+      (same vecnil)
+      (lambda (i x xs almost)
+        (cong
+          almost
+          (the (-> (Vec a i) (Vec a (add1 i)))
+               (lambda (w) (vec:: x w))))))))
+
+; we turn the proof above by using ind-Nat to construct a function that eliminates
+; a vector of length k, instead of operating directly on the vector itself
+; in this case, we have to use head/tail to get x/xs, but since
+; Pie doesn't think that (vec:: (head v) (tail v)) is the same Vec as v
+; this proof fails and the code below doesn't compile
+(claim vec=id-Vec_ind-Nat
+  (Pi ((a U) (k Nat) (v (Vec a k)))
+    (= (Vec a k) v (id-Vec a k v))))
+(define vec=id-Vec_ind-Nat
+  (lambda (a k)
+    (ind-Nat
+      k
+      (lambda (i) (Pi ((v (Vec a i))) (= (Vec a i) v (id-Vec a i v))))
+      (lambda (v) (same vecnil))
+      (lambda (i almost)
+        (lambda (v)
+          (cong
+            (almost (tail v))
+            (the (-> (Vec a i) (Vec a (add1 i)))
+              (lambda (w) (vec:: (head v) w)))))))))
+
+
+; if it weren't for this limitation, i think this would be a correct implementation
+; of ind-Vec in terms of ind-Nat
+
+; (claim my-ind-Vec
+;   (Pi ((E U)
+;        (target-1 Nat)
+;        (target-2 (Vec E target-1))
+;        (motive (Pi ((k Nat)) (-> (Vec E k) U)))
+;        (base (motive zero vecnil))
+;        (step (Pi ((k Nat)
+;                   (e E)
+;                   (es (Vec E k)))
+;                   (-> (motive k es) (motive (add1 k) (vec:: e es))))))
+;     (motive target-1 target-2)))
+
+; (define my-ind-Vec
+;     (lambda (E target-1 target-2 motive base step)
+;         ((ind-Nat
+;             target-1
+;             (lambda (i) (Pi ((w (Vec E i))) (motive i w)))
+;             (lambda (w) base)
+;             (lambda (k almost-ind)
+;                 (lambda (w)
+;                     (step k (head w) (tail w) (almost-ind (tail w))))))
+;         target-2)))
+  
