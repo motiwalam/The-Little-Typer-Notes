@@ -1,0 +1,109 @@
+(claim  m Nat)
+(define m 2)
+
+(claim A U)
+(define A (Set m))
+
+(claim a A)
+(define a (left sole))
+
+(claim b A)
+(define b (right (left sole)))
+
+; first automaton, accepts only a+
+(claim n1 Nat)
+(define n1 3)
+
+(claim Q1 U)
+(define Q1 (Set n1))
+
+(claim q1_0 Q1)
+(define q1_0 (left sole))
+
+(claim q1_1 Q1)
+(define q1_1 (right (left sole)))
+
+(claim q1_2 Q1)
+(define q1_2 (right (right (left sole))))
+
+(claim delta1 (dfa.Delta n1 m))
+(define delta1
+  (lambda (q c)
+    (elim-Set Q1 n1 q
+      (lambda (@q0)
+        (elim-Set Q1 m c
+          (lambda (@a) q1_1)
+          (lambda (@b) q1_2)))
+
+      (lambda (@q1)
+        (elim-Set Q1 m c
+          (lambda (@a) q1_1)
+          (lambda (@b) q1_2)))
+
+      (lambda (@q2) q1_2))))
+
+(claim F1 (Subset Q1))
+(define F1
+  (singleton n1 q1_1))
+
+; second automaton, accepts only b+
+(claim n2 Nat)
+(define n2 3)
+
+(claim Q2 U)
+(define Q2 (Set n1))
+
+(claim q2_0 Q1)
+(define q2_0 (left sole))
+
+(claim q2_1 Q1)
+(define q2_1 (right (left sole)))
+
+(claim q2_2 Q1)
+(define q2_2 (right (right (left sole))))
+
+(claim delta2 (dfa.Delta n1 m))
+(define delta2
+  (lambda (q c)
+    (elim-Set Q1 n1 q
+      (lambda (@q0)
+        (elim-Set Q1 m c
+          (lambda (@a) q2_2)
+          (lambda (@b) q2_1)))
+
+      (lambda (@q1)
+        (elim-Set Q1 m c
+          (lambda (@a) q2_2)
+          (lambda (@b) q2_1)))
+
+      (lambda (@q2) q2_2))))
+
+(claim F2 (Subset Q2))
+(define F2
+  (singleton n1 q2_1))
+
+
+(claim N1+2
+  (NFA (+ n1 n2) m))
+(define N1+2
+  (dfa.concat m (pred n1) (pred n2)
+    delta1 q1_0 F1
+    delta2 q2_0 F2))
+
+(claim n Nat)
+(define n (car N1+2))
+
+(claim delta (nfa.Delta n m))
+(define delta (car (cdr (cdr N1+2))))
+
+(claim q_s (Set n))
+(define q_s
+  (car (cdr (cdr (cdr N1+2)))))
+
+(claim F (Subset (Set n)))
+(define F
+  (cdr (cdr (cdr (cdr N1+2)))))
+
+; takes a really long time and upwards of 10gb of memory to run this line
+; (claim runner (Pi ((w Nat)) (NaryTo w A Bool)))
+; (define runner (nfa.runner n m delta q_s F))

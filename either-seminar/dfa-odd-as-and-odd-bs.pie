@@ -1,0 +1,79 @@
+(claim n Nat)
+(define n 4)
+
+(claim m Nat)
+(define m 2)
+
+(claim  Q U)
+(define Q (Set n))
+
+(claim  q0 Q)
+(define q0 (left sole))
+
+(claim  q1 Q)
+(define q1 (right (left sole)))
+
+(claim  q2 Q)
+(define q2 (right (right (left sole))))
+
+(claim  q3 Q)
+(define q3 (right (right (right (left sole)))))
+
+(claim  A U)
+(define A (Set m))
+
+(claim  a A)
+(define a (left sole))
+
+(claim  b A)
+(define b (right (left sole)))
+
+(claim  delta (dfa.Delta n m))
+(define delta
+ (lambda (q c)
+   (elim-Set (Set n) n q
+     (lambda (@q0)
+       (elim-Set (Set n) m c
+         (lambda (@a) q1)
+         (lambda (@b) q2)))
+     (lambda (@q1)
+       (elim-Set (Set n) m c
+         (lambda (@a) q0)
+         (lambda (@b) q3)))
+     (lambda (@q2)
+       (elim-Set (Set n) m c
+         (lambda (@a) q3)
+         (lambda (@b) q0)))
+     (lambda (@q3)
+       (elim-Set (Set n) m c
+         (lambda (@a) q2)
+         (lambda (@b) q1))))))
+
+(claim F (Subset Q))
+(define F
+  (lambda (q)
+    (elim-Set Bool n q
+      (lambda (@q0) False)
+      (lambda (@q1) False)
+      (lambda (@q2) False)
+      (lambda (@q3) True))))
+
+; False (right sole)
+(dfa.runner n m delta q0 F
+  0)
+
+; True (left sole)
+(dfa.runner n m delta q0 F
+  2 a b)
+
+; False (right sole)
+(dfa.runner n m delta q0 F
+  3 a a b)
+
+; False (right sole)
+(dfa.runner n m delta q0 F
+  3 a b b)
+
+; True (left sole)
+(dfa.runner n m delta q0 F
+  10 a b a a a a a a a a)

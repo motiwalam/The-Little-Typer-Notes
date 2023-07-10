@@ -1,0 +1,939 @@
+#lang pie
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Higher order functions
+
+; NaryTo n a b
+;  describes the type of an n-argument function
+;  where args of type a and result is of type b
+
+; compose k a b c f g
+;  composes f with g
+;  where f is a unary function from b to c
+;  and g is a k-ary function from a^k to b
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim NaryTo (-> Nat U U U))
+(define NaryTo
+    (lambda (n a b)
+        (iter-Nat n b (lambda (u) (-> a u)))))
+
+(claim compose
+    (Pi 
+        ((k Nat)
+         (a U)
+         (b U)
+         (c U))
+        (-> (-> b c) (NaryTo k a b) (NaryTo k a c))))
+(define compose
+    (lambda (k a b c)
+        (ind-Nat
+            k
+            (lambda (i) (-> (-> b c) (NaryTo i a b) (NaryTo i a c)))
+            (lambda (f) f)
+            (lambda (k-1 compose-k-1)
+                (lambda (f g x) (compose-k-1 f (g x))))
+            )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Booleans
+
+; Bool type, True, False
+; if a b on-true on-false
+;  executes on-true  if b is True
+;           on-false if b is False
+;  where on-true, on-false return values of
+;  type a
+
+; not, and, or
+; nat->bool, bool->nat
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Bool U)
+(define Bool (Either Trivial Trivial))
+
+(claim True Bool)
+(define True (left sole))
+
+(claim False Bool)
+(define False (right sole))
+
+(claim if
+  (Pi ((a U))
+      (-> Bool (-> Trivial a) (-> Trivial a) a)))
+(define if
+  (lambda (a b on-true on-false)
+    (ind-Either
+      b
+      (lambda (_) a)
+      on-true
+      on-false)))
+
+(claim not
+  (-> Bool Bool))
+(define not
+  (lambda (b)
+    (if Bool b
+      (lambda (_) False)
+      (lambda (_) True))))
+
+(claim and
+  (-> Bool Bool Bool))
+(define and
+  (lambda (p q)
+    (if Bool p
+      (lambda (_) q)
+      (lambda (_) p))))
+
+(claim or
+  (-> Bool Bool Bool))
+(define or
+  (lambda (p q)
+    (if Bool p
+      (lambda (_) p)
+      (lambda (_) q))))
+
+(claim nat->bool (-> Nat Bool))
+(define nat->bool
+  (lambda (n)
+    (which-Nat
+      n
+      False
+      (lambda (_) True))))
+
+(claim bool->nat (-> Bool Nat))
+(define bool->nat
+  (lambda (b)
+    (if Nat b
+      (lambda (_) 1)
+      (lambda (_) 0))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Arithmetic Functions
+
+; succ: x -> x + 1
+; pred: x -> max(x-1, 0)
+
+; sgn: 0 if n = 0 else 1
+; cosgn: 1 if n = 0 else 0
+
+; mu: bounded minimization operator
+
+; +, -, *, ^
+
+; >, ==
+
+; //, %
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim succ
+  (-> Nat Nat))
+(define succ
+  (lambda (n) (add1 n)))
+
+(claim pred
+  (-> Nat Nat))
+(define pred
+  (lambda (n)
+    (which-Nat
+      n
+      0
+      (lambda (n) n))))
+
+(claim sgn (-> Nat Nat))
+(define sgn (lambda (n) (which-Nat n 0 (lambda (n) 1))))
+
+(claim cosgn (-> Nat Nat))
+(define cosgn (lambda (n) (which-Nat n 1 (lambda (n) 0))))
+
+; the smallest natural z <= x satisfying p(z), or x + 1 if no such z exists
+(claim mu (-> Nat (-> Nat Nat) Nat))
+(define mu
+    (lambda (x p)
+        ; start at 0 and increment iff p evaluates to false (i.e 0)
+        (iter-Nat x 
+            (cosgn (p 0)) ; // 1 if p(0) is false and 0 if p(0) is true
+            (lambda (z) (iter-Nat (cosgn (p z)) z succ)))))
+
+(claim +
+  (-> Nat Nat Nat))
+(define +
+  (lambda (m n)
+    (iter-Nat
+     n
+     m
+     succ)))
+
+(claim -
+  (-> Nat Nat Nat))
+(define -
+  (lambda (m n)
+    (iter-Nat
+      n
+      m
+      pred)))
+
+(claim *
+  (-> Nat Nat Nat))
+(define *
+  (lambda (n m)
+    (iter-Nat
+      m
+      0
+      (+ n))))
+
+(claim ^ (-> Nat Nat Nat))
+(define ^
+  (lambda (n m)
+    (iter-Nat
+      m
+      1
+      (* n))))
+
+(claim > (-> Nat Nat Nat))
+(define >
+    (lambda (n m) (sgn (- n m))))
+
+(claim ==
+  (-> Nat Nat Nat))
+(define ==
+  (lambda (m n)
+    (- 1 (+ (- m n) (- n m)))))
+
+; floor(n/m) is the smallest number z such that (z + 1)m > n
+(claim // (-> Nat Nat Nat))
+(define //
+    (lambda (n m)
+        (mu n (lambda (z) (> (* (succ z) m) n)))))
+
+(claim % (-> Nat Nat Nat))
+(define %
+    (lambda (n m) (- n (* m (// n m)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Arithmetic Proofs
+
+; +associates: a + (b + c) = (a + b) + c
+; +commutes: a + b = b + a
+
+; pow-positive:
+;  for all b, n, there exists k such that
+;  (b + 1)^n = k + 1
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim +associates
+  (Pi ((a Nat) (b Nat) (c Nat))
+    (= Nat (+ a (+ b c)) (+ (+ a b) c))))
+(define +associates
+  (lambda (a b c)
+    (ind-Nat
+      c
+      (lambda (i) (= Nat (+ a (+ b i)) (+ (+ a b) i)))
+      (same (+ a b))
+      (lambda (k-1 almost)
+        (cong almost succ)))))
+
+(claim +0-commutes
+  (Pi ((m Nat)) (= Nat (+ m 0) (+ 0 m))))
+(define +0-commutes
+  (lambda (m)
+    (ind-Nat
+      m
+      (lambda (i) (= Nat (+ i 0) (+ 0 i)))
+      (same 0)
+      (lambda (k-1 almost) (cong almost succ)))))
+
+(claim +1-associates
+  (Pi ((m Nat) (n Nat))
+    (= Nat (+ (add1 m) n) (+ m (add1 n)))))
+(define +1-associates
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ (add1 m) i) (+ m (add1 i))))
+      (same (add1 m))
+      (lambda (n-1 almost)
+        (cong almost succ)))))
+
+(claim +commutes
+  (Pi ((m Nat) (n Nat)) (= Nat (+ m n) (+ n m))))
+(define +commutes
+  (lambda (m n)
+    (ind-Nat
+      n
+      (lambda (i) (= Nat (+ m i) (+ i m)))
+      (+0-commutes m)
+      (lambda (k-1 almost)
+        (trans
+         (cong almost succ)
+         (symm (+1-associates k-1 m)))))))
+
+; for b > 0, for all n, b^n = (add1 k) for all n
+(claim pow-positive
+  (Pi ((b-1 Nat) (n Nat))
+    (Sigma ((k Nat)) (= Nat (^ (add1 b-1) n) (add1 k)))))
+(define pow-positive
+  (lambda (b-1 n)
+    (ind-Nat
+      n
+      (lambda (i) (Sigma ((k Nat)) (= Nat (^ (add1 b-1) i) (add1 k))))
+      (cons 0 (same 1))
+      (lambda (i b^i=k+1)
+        (cons
+          (+ (* (add1 b-1) (car b^i=k+1)) b-1)
+          (trans
+            (cong (cdr b^i=k+1) (* (add1 b-1)))
+            (trans
+              (+commutes (add1 b-1) (* (add1 b-1) (car b^i=k+1)))
+              (+associates (* (add1 b-1) (car b^i=k+1)) b-1 1))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; List & Vector Functions
+
+; append: insert value at end of List
+; reverse: reverse a list
+; make-list: 
+;  collect function arguments into List
+
+; appendvec: insert value at end of Vec
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim append (Pi ((a U)) (-> a (List a) (List a))))
+(define append
+    (lambda (a)
+        (lambda (e lst)
+            (rec-List
+                lst
+                (:: e nil)
+                (lambda (x xs append-xs) (:: x append-xs))))))
+
+(claim reverse
+  (Pi ((a U)) (-> (List a) (List a))))
+(define reverse
+  (lambda (a l)
+    (rec-List
+      l
+      (the (List a) nil)
+      (lambda (x xs acc)
+        (append a x acc)))))
+
+(claim make-list
+  (Pi 
+    ((a U) 
+     (k Nat)) 
+    (NaryTo k a (List a))))
+(define make-list
+    (lambda (a k)
+        (ind-Nat
+            k
+            (lambda (i) (NaryTo i a (List a)))
+            nil
+            (lambda (k-1 g)
+                (lambda (x)
+                    (compose
+                        k-1
+                        a (List a) (List a)
+                        (lambda (v) (:: x v))
+                        g))))))
+
+(claim appendvec (Pi ((a U) (k Nat)) (-> a (Vec a k) (Vec a (add1 k)))))
+(define appendvec
+  (lambda (a k e v)
+    (ind-Vec k v
+      (lambda (i x) (Vec a (add1 i)))
+      (vec:: e vecnil)
+      (lambda (k-1 e es ces) (vec:: e ces)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Sets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Set
+  (-> Nat U))
+(define Set
+  (lambda (n)
+    (rec-Nat
+      n
+      Absurd
+      (lambda (i u) (Either Trivial u)))))
+
+(claim SetEliminators
+  (-> U Nat U))
+(define SetEliminators
+  (lambda (a k)
+    (rec-Nat
+      k
+      a
+      (lambda (i u)
+        (-> (-> Trivial a) u)))))
+
+(claim constant-SetEliminator
+  (Pi
+    ((a U) (k Nat))
+    (-> a (SetEliminators a k))))
+(define constant-SetEliminator
+  (lambda (a k b)
+    (ind-Nat
+      k
+      (lambda (i) (SetEliminators a i))
+      b
+      (lambda (i almost) (lambda (f) almost)))))
+
+(claim elim-Set
+  (Pi ((a U) (k Nat))
+      (-> (Set k) (SetEliminators a k))))
+(define elim-Set
+  (lambda (a k)
+    (ind-Nat
+      k
+      (lambda (i) (-> (Set i) (SetEliminators a i)))
+      (lambda (x) (ind-Absurd x a))
+      (lambda (i almost)
+        (lambda (x f_i)
+          (ind-Either
+            x
+            (lambda (_) (SetEliminators a i))
+            (lambda (l) (constant-SetEliminator a i (f_i l)))
+            (lambda (r) (almost r))))))))
+
+(claim Pair-SetEliminators
+  (-> U Nat U))
+(define Pair-SetEliminators
+  (lambda (a k)
+    (rec-Nat
+      k
+      Trivial
+      (lambda (i u)
+        (Pair (-> Trivial a) u)))))
+
+(claim make-Pair-SetEliminators
+  (Pi ((a U) (k Nat))
+      (-> (Pi ((j Nat)) (-> Trivial a))
+          (Pair-SetEliminators a k))))
+(define make-Pair-SetEliminators
+  (lambda (a k on)
+    (ind-Nat
+       k
+       (Pair-SetEliminators a)
+       sole
+       (lambda (j almost)
+         (cons (on j) almost)))))
+
+(claim apply-Pair-SetEliminators
+  (Pi ((a U) (k Nat))
+    (-> (SetEliminators a k) (Pair-SetEliminators a k) a)))
+(define apply-Pair-SetEliminators
+  (lambda (a k)
+    (ind-Nat
+      k
+      (lambda (i) (-> (SetEliminators a i) (Pair-SetEliminators a i) a))
+      (lambda (x p) x)
+      (lambda (i almost)
+        (lambda (x p)
+          (almost (x (car p)) (cdr p)))))))
+
+(claim ind-Set
+  (Pi ((n Nat)
+       (m (-> Nat U))
+       (b (m 0))
+       (s (Pi ((k Nat)) (-> (Set n) (m k) (m (add1 k))))))
+      (m n)))
+(define ind-Set
+  (lambda (n m b)
+    (ind-Nat
+      n
+      (lambda (i) (-> (Pi ((k Nat)) (-> (Set i) (m k) (m (add1 k)))) (m i)))
+      (lambda (s) b)
+      (lambda (i almost)
+        (lambda (s)
+          (s i (left sole)
+            (almost (lambda (k x m) (s k (right x) m)))))))))
+
+(claim idx
+  (Pi ((k Nat))
+    (-> (Set k) Nat)))
+(define idx
+  (lambda (k x)
+    (apply-Pair-SetEliminators Nat k
+      (elim-Set Nat k x)
+      (make-Pair-SetEliminators Nat k (lambda (j _) j)))))
+
+(claim nth
+  (Pi ((n Nat)
+       (i Nat))
+    (Set (add1 n))))
+(define nth
+  (lambda (n i)
+    (ind-Set (add1 n)
+      (lambda (k) (Set (add1 n)))
+      (left sole)
+      (lambda (k q acc)
+        (which-Nat
+          (== i k)
+          acc
+          (lambda (_)
+            q))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Subsets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Subset
+  (-> U U))
+(define Subset
+  (lambda (a) (-> a Bool)))
+
+(claim non-empty?
+  (Pi ((n Nat))
+    (-> (Subset (Set n)) Bool)))
+(define non-empty?
+  (lambda (n S)
+    (ind-Set
+      n
+      (lambda (_) Bool)
+      False
+      (lambda (i x acc)
+        (or acc (S x))))))
+
+(claim empty?
+  (Pi ((n Nat))
+    (-> (Subset (Set n)) Bool)))
+(define empty?
+  (lambda (n S)
+    (not (non-empty? n S))))
+
+(claim singleton
+  (Pi ((k Nat))
+    (-> (Set k) (Subset (Set k)))))
+(define singleton
+  (lambda (k a)
+    (lambda (x)
+      (nat->bool
+        (== (idx k a) (idx k x))))))
+      
+(claim empty-set
+  (Pi ((a U)) (Subset a)))
+(define empty-set
+  (lambda (a x) False))
+
+(claim union
+  (Pi ((a U))
+    (-> (Subset a) (Subset a) (Subset a))))
+(define union
+  (lambda (a f1 f2)
+    (lambda (x)
+      (or (f1 x) (f2 x)))))
+
+(claim intersection
+  (Pi ((a U))
+    (-> (Subset a) (Subset a) (Subset a))))
+(define intersection
+  (lambda (a f1 f2)
+    (lambda (x)
+      (and (f1 x) (f2 x)))))
+
+(claim union-over
+  (Pi ((n Nat) (b U))
+    (-> (Subset (Set n)) (-> (Set n) (Subset b)) (Subset b))))
+(define union-over
+  (lambda (n b S m)
+    (ind-Set
+      n
+      (lambda (_) (Subset b))
+      (empty-set b)
+      (lambda (k x acc)
+        (union b
+          acc
+          (if (Subset b) (S x)
+            (lambda (true) (m x))
+            (lambda (false) (empty-set b))))))))
+
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Finite State Automata - DFSA
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim dfa.Delta
+  (-> Nat Nat U))
+(define dfa.Delta
+  (lambda (n a)
+    (-> (Set n) (Set a) (Set n))))
+
+(claim DFA
+  (-> Nat
+      Nat
+      U))
+(define DFA
+  (lambda (n m)
+    (Sigma ((_ Nat)
+            (_ Nat)
+            (d (dfa.Delta n m))
+            (q (Set n)))
+           (Subset (Set n)))))
+
+(claim make-dfa
+  (Pi ((n Nat) (m Nat))
+    (-> (dfa.Delta n m) (Set n) (Subset (Set n))
+        (DFA n m))))
+(define make-dfa
+  (lambda (n m delta q_s F)
+    (cons
+      n
+      (cons
+        m
+        (cons
+          delta
+          (cons
+            q_s
+            F))))))
+
+(claim dfa.delta*
+  (Pi ((n Nat) (a Nat))
+      (-> (dfa.Delta n a)
+          (Set n)
+          (List (Set a)) (Set n))))
+
+(define dfa.delta*
+  (lambda (n a delta q s)
+    (rec-List
+      (reverse (Set a) s)
+      q
+      (lambda (x xs acc)
+        (delta
+          acc
+          x)))))
+
+(claim dfa.accepts?
+  (Pi ((n Nat) (a Nat))
+      (-> (dfa.Delta n a)
+          (Set n)
+          (Subset (Set n))
+          (List (Set a))
+          Bool)))
+(define dfa.accepts?
+  (lambda (n a delta q_s F s)
+    (F (dfa.delta* n a delta q_s s))))
+
+(claim dfa.runner
+  (Pi ((n Nat) (a Nat))
+      (-> (dfa.Delta n a) (Set n) (Subset (Set n))
+          (Pi ((w Nat)) (NaryTo w (Set a) Bool)))))
+(define dfa.runner
+  (lambda (n a delta q_s F w)
+    (compose
+      w
+      (Set a)
+      (List (Set a))
+      Bool
+      (dfa.accepts? n a delta q_s F)
+      (make-list (Set a) w))))
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Finite State Automata - NFSA
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim nfa.Delta
+  (-> Nat Nat U))
+(define nfa.Delta
+  (lambda (n a)
+    (-> (Set n) (Either (Set a) Trivial) (Subset (Set n)))))
+    
+(claim NFA
+  (-> Nat
+      Nat
+      U))
+(define NFA
+  (lambda (n m)
+    (Sigma ((_ Nat)
+            (_ Nat)
+            (_ (nfa.Delta n m))
+            (_ (Set n)))
+           (Subset (Set n)))))
+
+(claim make-nfa
+  (Pi ((n Nat) (m Nat))
+    (-> (nfa.Delta n m) (Set n) (Subset (Set n))
+        (NFA n m))))
+(define make-nfa
+  (lambda (n m delta q_s F)
+    (cons
+      n
+      (cons
+        m
+        (cons
+          delta
+          (cons
+            q_s
+            F))))))
+
+(claim nfa.epsilon-reachable
+  (Pi ((n Nat) (a Nat))
+    (-> (nfa.Delta n a) (Set n) (Subset (Set n)))))
+(define nfa.epsilon-reachable
+  (lambda (n a delta q)
+    (iter-Nat
+      n
+      (singleton n q)
+      (lambda (acc)
+        (union (Set n)
+          acc
+          (union-over n (Set n)
+            acc
+            (lambda (q0)
+              (delta q0 (right sole)))))))))
+          
+(claim nfa.delta*
+  (Pi ((n Nat) (a Nat))
+    (-> (nfa.Delta n a)
+        (Set n)
+        (List (Set a))
+        (Subset (Set n)))))
+(define nfa.delta*
+  (lambda (n a delta q_s s)
+    (rec-List
+      (reverse (Set a) s)
+      (nfa.epsilon-reachable n a delta q_s)
+      (lambda (x xs acc)
+        (union-over n (Set n)
+          acc
+          (lambda (q0)
+            (union-over n (Set n)
+              ; E(q), all states reachable from q via epsilon-transitions 
+              (delta q0 (left x))
+              (nfa.epsilon-reachable n a delta))))))))
+
+(claim nfa.accepts?
+  (Pi ((n Nat) (a Nat))
+    (-> (nfa.Delta n a)
+        (Set n)
+        (Subset (Set n))
+        (List (Set a))
+        Bool)))
+(define nfa.accepts?
+  (lambda (n a delta q_s F s)
+    (non-empty? n
+      (intersection (Set n)
+        F
+        (nfa.delta* n a delta q_s s)))))
+
+(claim nfa.runner
+  (Pi ((n Nat) (a Nat))
+    (-> (nfa.Delta n a)
+        (Set n)
+        (Subset (Set n))
+        (Pi
+          ((w Nat)) (NaryTo w (Set a) Bool)))))
+(define nfa.runner
+  (lambda (n a delta q_s F w)
+    (compose
+      w
+      (Set a)
+      (List (Set a))
+      Bool
+      (nfa.accepts? n a delta q_s F)
+      (make-list (Set a) w))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Finite State Automata - Complement
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim dfa.complement
+  (Pi ((n Nat) (a Nat))
+    (-> (dfa.Delta n a) (Set n) (Subset (Set n))
+        (DFA n a))))
+(define dfa.complement
+  (lambda (n a delta q_s F)
+    (make-dfa
+      n a delta q_s
+      (lambda (x) (not (F x))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Finite State Automata - Concatenation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim dfa.concat
+  (Pi ((a Nat)
+       (n1 Nat) (n2 Nat))
+    (-> (dfa.Delta (add1 n1) a) (Set (add1 n1)) (Subset (Set (add1 n1)))
+        (dfa.Delta (add1 n2) a) (Set (add1 n2)) (Subset (Set (add1 n2)))
+        (NFA (+ (add1 n1) (add1 n2)) a))))
+(define dfa.concat
+  (lambda (a n1 n2 d1 qs1 F1 d2 qs2 F2)
+    (make-nfa
+      (+ (add1 n1) (add1 n2))
+      a
+      (lambda (q c-or-empty)
+        (ind-Either
+          c-or-empty
+          (lambda (_) (Subset (Set (+ (add1 n1) (add1 n2)))))
+          (lambda (c)
+            (apply-Pair-SetEliminators (Subset (Set (+ (add1 n1) (add1 n2)))) (+ (add1 n1) (add1 n2))
+              (elim-Set (Subset (Set (+ (add1 n1) (add1 n2)))) (+ (add1 n1) (add1 n2)) q)
+              (make-Pair-SetEliminators (Subset (Set (+ (add1 n1) (add1 n2)))) (+ (add1 n1) (add1 n2))
+                (lambda (j _)
+                  ; if j < n;  use d1 on nth j
+                  ;            (d1 (nth j)) gives (Set n)
+                  ;            (idx ^) gives Nat
+                  ;            (nth ^) gives (Set (+ (add1 n1) (add1 n2))
+                  ; if j >= n; use d2 on nth (- j n)
+                  (which-Nat
+                    (- (add1 n1) j)
+                    ; case: j >= add1 n1
+                    (singleton
+                      (+ (add1 n1) (add1 n2))
+                      (nth (+ (add1 n1) n2)
+                        (+
+                          (add1 n1)
+                          (idx (add1 n2)
+                            (d2
+                              (nth n2 (- j (add1 n1))) c)))))
+
+                    ; case: j < add1 n1
+                    (lambda (_)
+                      (singleton (+ (add1 n1) (add1 n2))
+                        (nth (+ (add1 n1) n2)
+                          (idx (add1 n1)
+                            (d1 (nth n1 j) c))))))))))
+
+          (lambda (empty)
+            (apply-Pair-SetEliminators (Subset (Set (+ (add1 n1) (add1 n2)))) (+ (add1 n1) (add1 n2))
+              (elim-Set (Subset (Set (+ (add1 n1) (add1 n2)))) (+ (add1 n1) (add1 n2)) q)
+              (make-Pair-SetEliminators (Subset (Set (+ (add1 n1) (add1 n2)))) (+ (add1 n1) (add1 n2))
+                (lambda (j _)
+                  (which-Nat
+                    (- (add1 n1) j)
+                    ; case: j >= (add1 n1), so do nothin
+                    (empty-set (Set (+ (add1 n1) (add1 n2))))
+                    ; case: j < (add1 n1)
+                    (lambda (_)
+                      (if (Subset (Set (+ (add1 n1) (add1 n2))))
+                        (F1 (nth n1 j))
+                        (lambda (_)
+                          (singleton (+ (add1 n1) (add1 n2))
+                            (nth (+ (add1 n1) n2)
+                              (+ (add1 n1)
+                                 (idx (add1 n2) qs2)))))
+                        (lambda (on-false)
+                          (empty-set (Set (+ (add1 n1) (add1 n2))))))))))))))
+
+      ; initial state is just qs1
+      (nth
+        (+ (add1 n1) n2)
+        (idx (add1 n1) qs1))
+
+      ; final states are F2
+      (lambda (q)
+        (apply-Pair-SetEliminators Bool (+ (add1 n1) (add1 n2))
+          (elim-Set Bool (+ (add1 n1) (add1 n2)) q)
+          (make-Pair-SetEliminators Bool (+ (add1 n1) (add1 n2))
+            (lambda (j _)
+              (which-Nat
+                (- (add1 n1) j)
+                ; case: j >= (add1 n1), so use F2
+                (F2 (nth n2 (- j (add1 n1))))
+                ; case: j < (add1 n1), so return false
+                (lambda (_) False)))))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Finite State Automata - NFSA to DFSA
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim decimal->base
+  (Pi ((k Nat))
+    (-> Nat Nat (Vec Nat k))))
+(define decimal->base
+  (lambda (k b)
+    (ind-Nat
+      k
+      (lambda (i) (-> Nat (Vec Nat i)))
+      (lambda (n) vecnil)
+      (lambda (i almost)
+        (lambda (n)
+          (appendvec Nat i
+            (% n b)
+            (almost (// n b))))))))
+
+(claim base->decimal
+  (Pi ((k Nat))
+    (-> Nat (Vec Nat k) Nat)))
+(define base->decimal
+  (lambda (k b v)
+    (ind-Vec
+      k v
+      (lambda (i w) Nat)
+      zero
+      (lambda (i x xs acc)
+        (+ acc (* x (^ b i)))))))
+
+(claim vec->subset
+  (Pi ((k Nat))
+    (-> (Vec Nat k) (Subset (Set k)))))
+(define vec->subset
+  (lambda (k v x)
+    (apply-Pair-SetEliminators Bool k
+      (elim-Set Bool k x)
+      (ind-Vec
+        k v
+        (lambda (i w) (Pair-SetEliminators Bool i))
+        sole
+        (lambda (i x xs almost)
+          (cons
+            (lambda (_) (nat->bool x))
+            almost))))))
+
+(claim subset->vec
+  (Pi ((k Nat))
+    (-> (Subset (Set k)) (Vec Nat k))))
+(define subset->vec
+  (lambda (k s)
+    (ind-Set
+      k
+      (lambda (i) (Vec Nat i))
+      vecnil
+      (lambda (i q acc)
+        (vec:: (bool->nat (s q)) acc)))))
+
+(claim nfa->dfa
+  (Pi ((n Nat)
+       (a Nat))
+    (-> (nfa.Delta n a) (Set n) (Subset (Set n))
+        (DFA (^ 2 n) a))))
+(define nfa->dfa
+  (lambda (n a delta q_s F)
+    (make-dfa
+      (^ 2 n)
+      a
+      (lambda (q c)
+        (apply-Pair-SetEliminators (Set (^ 2 n)) (^ 2 n)
+          (elim-Set (Set (^ 2 n)) (^ 2 n) q)
+          (make-Pair-SetEliminators (Set (^ 2 n)) (^ 2 n)
+            (lambda (j _)
+              (replace
+                (symm (cdr (pow-positive 1 n)))
+                Set
+                (nth
+                  (car (pow-positive 1 n))
+                  (base->decimal n 2
+                    (subset->vec n
+                      (union-over n (Set n)
+                        (vec->subset n (decimal->base n 2 j))
+                        (lambda (qp)
+                          (union-over n (Set n)
+                            (delta qp (left c))
+                            (nfa.epsilon-reachable n a delta))))))))))))
+      (replace
+        (symm (cdr (pow-positive 1 n)))
+        Set
+        (nth
+          (car (pow-positive 1 n))
+          (base->decimal n 2
+            (subset->vec n
+              (nfa.epsilon-reachable n a delta q_s)))))
+      (lambda (q)
+        (non-empty?
+          n
+          (intersection
+            (Set n)
+            F
+            (vec->subset n (decimal->base n 2 (idx (^ 2 n) q)))))))))

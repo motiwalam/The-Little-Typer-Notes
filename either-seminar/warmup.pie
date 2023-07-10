@@ -1,0 +1,103 @@
+#lang pie
+
+(claim Bool U)
+(define Bool (Either Trivial Trivial))
+
+(claim True Bool)
+(define True (left sole))
+
+(claim False Bool)
+(define False (right sole))
+
+(claim if
+  (Pi ((a U))
+      (-> Bool (-> Trivial a) (-> Trivial a) a)))
+(define if
+  (lambda (a b on-true on-false)
+    (ind-Either
+      b
+      (lambda (_) a)
+      on-true
+      on-false)))
+
+(claim not
+  (-> Bool Bool))
+(define not
+  (lambda (b)
+    (if Bool b
+      (lambda (_) False)
+      (lambda (_) True))))
+
+(claim and
+  (-> Bool Bool Bool))
+(define and
+  (lambda (p q)
+    (if Bool p
+      (lambda (_) q)
+      (lambda (_) p))))
+
+(claim or
+  (-> Bool Bool Bool))
+(define or
+  (lambda (p q)
+    (if Bool p
+      (lambda (_) p)
+      (lambda (_) q))))
+        
+
+(claim and-over-or=>
+  (Pi ((a U) (b U) (c U))
+      (-> (Pair a (Either b c)) (Either (Pair a b) (Pair a c)))))
+(define and-over-or=>
+  (lambda (a b c p)
+    (ind-Either
+      (cdr p)
+      (lambda (_) (Either (Pair a b) (Pair a c)))
+      (lambda (l) (left (cons (car p) l)))
+      (lambda (r) (right (cons (car p) r))))))
+
+(claim and-over-or<=
+  (Pi ((a U) (b U) (c U))
+      (-> (Either (Pair a b) (Pair a c)) (Pair a (Either b c)))))
+(define and-over-or<=
+  (lambda (a b c s)
+    (ind-Either
+      s
+      (lambda (_) (Pair a (Either b c)))
+      (lambda (l) (cons
+                    (car l)
+                    (left (cdr l))))
+      (lambda (r) (cons
+                    (car r)
+                    (right (cdr r)))))))
+
+
+(claim or-over-and=>
+  (Pi ((a U) (b U) (c U))
+      (-> (Either a (Pair b c)) (Pair (Either a b) (Either a c)))))
+(define or-over-and=>
+  (lambda (a b c s)
+    (ind-Either
+      s
+      (lambda (_) (Pair (Either a b) (Either a c)))
+      (lambda (l) (cons (left l) (left l)))
+      (lambda (r) (cons
+                    (right (car r))
+                    (right (cdr r)))))))
+
+(claim or-over-and<=
+  (Pi ((a U) (b U) (c U))
+      (-> (Pair (Either a b) (Either a c)) (Either a (Pair b c)))))
+(define or-over-and<=
+  (lambda (a b c p)
+    (ind-Either
+      (car p)
+      (lambda (_) (Either a (Pair b c)))
+      (lambda (l) (left l))
+      (lambda (r)
+        (ind-Either
+          (cdr p)
+          (lambda (_) (Either a (Pair b c)))
+          (lambda (l) (left l))
+          (lambda (r2)
+            (right (cons r r2))))))))
