@@ -208,11 +208,11 @@ Other trivial things like the semantics of function application (substitution), 
     \item Constructors \textit{build} values whereas Eliminators \textit{dismantle} values.
         \begin{itemize}
             \item \lstinline{(cons 1 2)} builds a \lstinline{(Pair Nat Nat)}; to then access the numbers \lstinline{1} and \lstinline{2} again, we use \lstinline{car} and \lstinline{cdr}.
-            \item \lstinline{($\lambda$ (s) s)} builds a \lstinline{($\to$ Atom Atom)}; application is the eliminator for functions
+            \item \lstinline{(lambda (s) s)} builds a \lstinline{(-> Atom Atom)}; application is the eliminator for functions
         \end{itemize}
-    \item The application eliminator for functions works by pure substitution. Hence, if \lstinline{f} is a \lstinline{(\(\rightarrow\) X Y)} then \lstinline{(\(\lambda\) (y) (f y))} is the same \lstinline{(\(\rightarrow\) X Y)} as \lstinline{f} \textit{as long as \lstinline{y} does not appear in \lstinline{f}}. \textcolor{red}{Is this last condition really necessary in Pie, or have the authors introduced it just to make teaching the semantics of function application simpler?}
+    \item The application eliminator for functions works by pure substitution. Hence, if \lstinline{f} is a \lstinline{(-> X Y)} then \lstinline{(lambda (y) (f y))} is the same \lstinline{(-> X Y)} as \lstinline{f} \textit{as long as \lstinline{y} does not appear in \lstinline{f}}. \textcolor{red}{Is this last condition really necessary in Pie, or have the authors introduced it just to make teaching the semantics of function application simpler?}
     \item The eliminator for \lstinline{Nat} is \lstinline{which-Nat} which takes a \lstinline{Nat} \(k\), an expression which is returned if \(k = 0\) and a function \lstinline{f} which, if \(k = \lstinline{(add1 n)}\) is equal to \lstinline{(f n)}. So, \[
-        \lstinline{(\(\lambda\) (k) (which-Nat k zero add1))}
+        \lstinline{(lambda (k) (which-Nat k zero add1))}
     \]
     is a silly way of implementing the identity on \lstinline{Nat}. \textcolor{red}{How do we write the type of \lstinline{which-Nat}? What is the syntax for type variables?}
     \item \textbf{Note:} in languages like Haskell and Erlang that support pattern matching, it seems like we get eliminators built in to the syntax of the language. \textcolor{red}{How do Pie eliminators differ from pattern matching?}
@@ -222,9 +222,9 @@ Other trivial things like the semantics of function application (substitution), 
     \item \lstinline{$\mathcal{U}$} is the universal type; it is the type of types.
     \item To define a type alias, we use \lstinline{(claim alias $\mathcal{U}$)} and \lstinline{(define alias type-expr)}
         \begin{itemize}
-            \item \lstinline{(claim Predicate $\mathcal{U}$)} and \lstinline{(define Predicate (\(\rightarrow\) Nat Bool)}
+            \item \lstinline{(claim Predicate $\mathcal{U}$)} and \lstinline{(define Predicate (-> Nat Bool)}
         \end{itemize}
-    \item Type constructors are parameterized types, such as \lstinline{Pair} or \lstinline{\(\rightarrow\)}.
+    \item Type constructors are parameterized types, such as \lstinline{Pair} or \lstinline{->}.
     \item Type values are expressions with a type constructor at the top.
     \item Every \(\mathcal{U}\) is a type; but not all types are \(\mathcal{U}\) (in particular, \(\mathcal{U}\) is a type but not a \(\mathcal{U}\) because no type is itself)
 \end{itemize}
@@ -232,7 +232,7 @@ Other trivial things like the semantics of function application (substitution), 
 \begin{itemize}
     \item Neutral expressions are those with free variables; identically written neutral expressions are always the same, regardless of type.
     \item The semantics of \lstinline{claim} and \lstinline{define} are as you'd expect; if \lstinline{name} is \lstinline{claim}ed to be an \lstinline{X} and \lstinline{define}d to be \lstinline{expr}, then \lstinline{name} is the same \lstinline{X} as \lstinline{expr}.
-    \item \(\eta\)-equivalence; \lstinline{f} is the same function as \lstinline{(\(\lambda\) (x) (f x))}.
+    \item \(\eta\)-equivalence; \lstinline{f} is the same function as \lstinline{(lambda (x) (f x))}.
     \item If \lstinline{p} is a \lstinline{(Pair X Y)} then \lstinline{p} is the same \lstinline{(Pair X Y)} as \lstinline{(cons (car p) (cdr p))}.
 \end{itemize}
 \section{Eliminate All Natural Numbers!}
@@ -261,10 +261,10 @@ For \lstinline{X} a type, \lstinline{target} a \lstinline{Nat}, \lstinline{base}
 \lstinline{rec-Nat} achieves \href{https://en.wikipedia.org/wiki/Primitive_recursive_function}{primitive recursion} on the naturals. I don't really know what this means yet, but it looks cool!
 \subsection{Superfluence of \lstinline{which-Nat} and \lstinline{iter-Nat} with respect to \lstinline{rec-Nat}}
 \lstinline{rec-Nat} can be used to implement \lstinline{which-Nat} and \lstinline{iter-Nat} by using a function which ignores the second and first arguments respectively. That is, \[
-    \lstinline{(which-Nat n s f)} = \lstinline{(rec-Nat n s (\(\lambda\) (n-1 \_) (f n-1)))}
+    \lstinline{(which-Nat n s f)} = \lstinline{(rec-Nat n s (lambda (n-1 _) (f n-1)))}
 \]
 and \[
-    \lstinline{(iter-Nat n s f)} = \lstinline{(rec-Nat n s (\(\lambda\) (\_ f-n-1) (f f-n-1)))}
+    \lstinline{(iter-Nat n s f)} = \lstinline{(rec-Nat n s (lambda (_ f-n-1) (f f-n-1)))}
 \]
 \subsection{Superfluence of \lstinline{rec-Nat} with respect to \lstinline{iter-Nat}} \label{recNat-in-iterNat}
 \lstinline{iter-Nat} can be used to implement \lstinline{rec-Nat}. Let \(X\) be a set, \(f : \mathbb{N} \times X \to X\) a function. Define \(g : \mathbb{N} \times X \to \mathbb{N} \times X\) by \[
@@ -317,16 +317,16 @@ As mentioned in \autoref{rec-nat-elim}, the \lstinline{rec-Nat} eliminator achie
 This chapter is all about the \(\Pi\) type constructor, which allows us to abstract functions over types. With the \(\Pi\) type constructor, we can define functions whose return type depends on the types of its arguments. 
 \subsection{The \(\Pi\) Constructor}
 The \(\Pi\) constructor has the form \[
-    \lstinline{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
+    \lstinline{(Pi ((x$_1$ X$_1$) ... (x$_n$ X$_n$)) R)}
 \]
 where each \(\lstinline{x}_i\) is an identifier, \(\lstinline{X}_i\) is a type, and \lstinline{R} is an expression describing a type, possible using the identifiers \(\lstinline{x}_i\) (where \(\lstinline{x}_i\) represents a value of type \(\lstinline{X}_i\)).
 \\ \\
-A value of type \lstinline{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)} is a function which takes \(n\) arguments, where the \(i\)'th argument is of type \(\lstinline{X}_i\) and produces a result of type \lstinline{R}.
+A value of type \lstinline{(Pi ((x$_1$ X$_1$) ... (x$_n$ X$_n$)) R)} is a function which takes \(n\) arguments, where the \(i\)'th argument is of type \(\lstinline{X}_i\) and produces a result of type \lstinline{R}.
 \subsection{Superfluence of \(\to\) with respect to \(\Pi\)}
 The \(\to\) type constructor is syntax sugar for the \(\Pi\) type constructor. The type \[
-    \lstinline{(\(\to\) X\(_1\) ... X\(_n\) R)}
+    \lstinline{(-> X$_1$ ... X$_n$ R)}
 \] is equivalent to the type \[
-    \lstinline{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
+    \lstinline{(Pi ((x$_1$ X$_1$) ... (x$_n$ X$_n$)) R)}
 \]
 The power of the \(\Pi\) operator comes from the fact that the \lstinline{R} type is allowed to depend on the \lstinline{x}\(_i\)'s, so if \lstinline{X}\(_i\) is \(\mathcal{U}\), then \lstinline{R} can denote a variable type.
 \section{Lists, Lists, and More Lists}
@@ -380,9 +380,9 @@ The \lstinline{vec::} constructor takes a value of type \lstinline{E} and a \lst
 The \lstinline{head} and \lstinline{tail} eliminators do what they sound like they do; \lstinline{head} returns the first element whereas \lstinline{tail} drops the first element and returns the rest. These are natural functions to define on lists, but they can not be defined for any \lstinline{List} type, because the expressions \lstinline{(head nil)} and \lstinline{(tail nil)} are meaningless. 
 \\ \\
 Clearly, \lstinline{head} and \lstinline{tail} are only meaningful when applied to non-empty lists; so we somehow need to describe a type that excludes empty lists! This is where \(\Pi\) comes in; \[
-    \text{\lstinline{head} has type \lstinline{(Pi ((a U) (k Nat)) (-> (Vec a (add1 k)) a))}}
+    \text{\lstinline{head} has type }\lstinline{(Pi ((a U) (k Nat)) (-> (Vec a (add1 k)) a))}
 \] and \[
-    \text{\lstinline{tail} has type \lstinline{(Pi ((a U) (k Nat)) (-> (Vec a (add1 k)) (Vec a k)))}}
+    \text{\lstinline{tail} has type }\lstinline{(Pi ((a U) (k Nat)) (-> (Vec a (add1 k)) (Vec a k)))}
 \]
 The type of \lstinline{head} depends on a natural number \(k\); given a \(k\), \lstinline{head} accepts a vector of length \(k + 1\), thereby guaranteeing the existence of at least one element in the vector and thus making \lstinline{head} total. Similarly for \lstinline{tail}.
 \subsection{Some initial impressions}
@@ -391,7 +391,7 @@ Dependent types give us \textit{a lot} more power to describe programs. Suddenly
     apply = lambda f, args: f(*args)
 \end{lstlisting}
 It is clear what \lstinline{apply} is \textit{supposed} to do: take a function and some collection of arguments, and apply the function to those arguments. It is also clear that this function can easily raise an error, but that's par for the course in Python. However, in Pie, we can actually give a reasonable type for \lstinline{apply}: \[
-    \lstinline{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (NaryOp k a) (Vec a k) a))}
+    \lstinline{(Pi ((a U) (k Nat)) (-> (NaryOp k a) (Vec a k) a))}
 \] where \lstinline{NaryOp} is as \hyperref[code:NaryOp]{defined here}. 
 \\ \\
 Of course, the above type doesn't fully describe the type of our Python program \lstinline{apply}, but it's pretty good!
@@ -408,10 +408,10 @@ Unfortunately, we can't implement a lot of these quite yet, since the tools we h
 In this chapter, we saw how the types of \lstinline{head} and \lstinline{tail} involve the term \lstinline{(Vec a (add1 k))}. That \lstinline{(add1 k)} can be replaced with any arbitrary program that produces a natural number; so, \textcolor{red}{how can Pie tell if two of these types of expressions are equal if they are written in different ways?}
 \\ \\
 For example, suppose we have a function \[
-    \lstinline{(claim double (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a k) (Vec a (+ k k)))))}
+    \lstinline{(claim double (Pi ((a U) (k Nat)) (-> (Vec a k) (Vec a (+ k k)))))}
 \]
 and a function \[
-    \lstinline{(claim un-interleave (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (* 2 k)) (Pair (Vec a k) (Vec a k)))))}
+    \lstinline{(claim un-interleave (Pi ((a U) (k Nat)) (-> (Vec a (* 2 k)) (Pair (Vec a k) (Vec a k)))))}
 \]
 Would we be able to compose these functions? How can we tell Pie that \lstinline{(+ k k)} is the same \lstinline{Nat} as \lstinline{(* 2 k)}?
 \section{It All Depends on the Motive}
@@ -423,7 +423,7 @@ This opens up a new class of programs that we couldn't implement before, such as
 For
 \begin{align*}
     \lstinline{target} &\quad \text{a \lstinline{Nat}} \\
-    \lstinline{mot} &\quad \text{a } \lstinline{-> Nat U)} \\
+    \lstinline{mot} &\quad \text{a } \lstinline{(-> Nat U)} \\
     \lstinline{base} &\quad \text{a } \lstinline{(mot zero)} \\
     \lstinline{step} &\quad \text{a } \lstinline{(Pi ((k Nat)) (-> (mot k) (mot (add1 k))))}
 \end{align*}
@@ -439,7 +439,7 @@ Roughly, \lstinline{ind-Nat} can be used to compute expressions of the form \[
     f_n(n, f_{n - 1}(n-1, f_{n-2}(n - 2, \dots f_0(0, s)\dots)))
 \] where \(s \in X_0\) and \(f_k : \bN \times X_k \to X_{k + 1}\). This isn't exactly right, though, as the functions \(f_k\) aren't exactly independent, as the notation might imply, but rather they all have ``roughly the same behaviour". \textcolor{red}{How can we describe this restriction on the sequence of functions more precisely?}
 \\ \\
-So, we can think of applying \lstinline{ind-Nat} to \(n\) as a sort of path through the first \(n + 1\) types in an infinite sequence of types. It seems that not all sequences of types are valid, though; for example, I don't think it is possible to use \lstinline{ind-Nat} to traverse the sequence \lstinline{Atom, Nat, Atom, Nat, \dots} \textcolor{red}{What kind of sequences are valid?}
+So, we can think of applying \lstinline{ind-Nat} to \(n\) as a sort of path through the first \(n + 1\) types in an infinite sequence of types. It seems that not all sequences of types are valid, though; for example, I don't think it is possible to use \lstinline{ind-Nat} to traverse the sequence \lstinline{Atom}, \lstinline{Nat}, \lstinline{Atom}, \lstinline{Nat}, \dots \textcolor{red}{What kind of sequences are valid?}
 \\ \\
 In general, \textcolor{red}{what can \lstinline{ind-Nat} do and not do? On one hand, it seems like the new \lstinline{mot} argument makes \lstinline{ind-Nat} significantly stronger, but it feels like there are some subtle restrictions that aren't obvious from the type}.
 \subsection{Superfluence of \lstinline{rec-Nat} with respect to \lstinline{ind-Nat}}
@@ -470,11 +470,11 @@ When \lstinline{X} is a type and \lstinline{from}, \lstinline{to} are both \lsti
 \\ \\
 The \lstinline{=} type has one constructor: \lstinline{same}. Given an \lstinline{e} of type \lstinline{X}, \lstinline{(same e)} is a \lstinline{(= X e e)}.
 \\ \\
-\lstinline{cong} is an eliminator for \lstinline{=}. Given a \lstinline{target} of type \lstinline{(= X from to)}, and a function \lstinline{f} of type \lstinline{(\(\to\) X Y)}, \lstinline{(cong target f)} returns a value of type \lstinline{(= Y (f from) (f to))}. \lstinline{cong} represents the well-definedness of functions; that is, if \(x = y\) then \(f(x) = f(y)\). \lstinline{(cong (same x) f)} computes as \lstinline{(same (f x))}.
+\lstinline{cong} is an eliminator for \lstinline{=}. Given a \lstinline{target} of type \lstinline{(= X from to)}, and a function \lstinline{f} of type \lstinline{(-> X Y)}, \lstinline{(cong target f)} returns a value of type \lstinline{(= Y (f from) (f to))}. \lstinline{cong} represents the well-definedness of functions; that is, if \(x = y\) then \(f(x) = f(y)\). \lstinline{(cong (same x) f)} computes as \lstinline{(same (f x))}.
 \subsection{Reading types as statements}
 We may think of types as statements and values as proofs of those statements. Most types we have seen so far represent quite uninteresting statements, such as \lstinline{Nat}, \lstinline{Atom}, \lstinline{List}, and \lstinline{Vec}.
 \\ \\
-The \(\Pi\) type constructor is quite interesting, as it represents the universal quantifier. That is, a type like \[\lstinline{(\(\Pi\) ((n Nat)) (= Nat (+ n n) (* 2 n)))}\] represents the statement ``for all \lstinline{Nat} \(n\), \lstinline{(+ n n)} equals \lstinline{(* 2 n)}".
+The \(\Pi\) type constructor is quite interesting, as it represents the universal quantifier. That is, a type like \[\lstinline{(Pi ((n Nat)) (= Nat (+ n n) (* 2 n)))}\] represents the statement ``for all \lstinline{Nat} \(n\), \lstinline{(+ n n)} equals \lstinline{(* 2 n)}".
 \\ \\
 The \(\to\) type constructor represents the implication; i.e \lstinline{(\(\to\) X Y)} represents the statement ``if \lstinline{X}, then \lstinline{Y}". The connection with \(\Pi\) here is interesting; we know that \(\to\) is syntax sugar for \(\Pi\). So, we might read a \(\Pi\) type as a statement of the form \(\forall x \in X. P(x)\). Then, in a \(\to\) type, \(P\) doesn't use \(x\), so the statement is really \(\forall x \in X. P\). 
 \\ \\
@@ -525,15 +525,15 @@ Induction on lists works very similarly to induction on the naturals, as the \ls
 \\ \\
 The \(\Sigma\) type is a more powerful version of the \lstinline{Pair} type, similar to how the \(\Pi\) type is a more powerful version of the \(\to\) type. The \(\Sigma\) type allows us to describe pairs in which the type of the second element depends on the first.
 \subsection{The \(\Sigma\) type}
-The expression \lstinline{(\(\Sigma\) ((x A)) D)} is a type when \lstinline{A} is a type and \lstinline{D} is a type whenever \lstinline{x} is an \lstinline{A}.
+The expression \lstinline{(Sigma ((x A)) D)} is a type when \lstinline{A} is a type and \lstinline{D} is a type whenever \lstinline{x} is an \lstinline{A}.
 \\ \\
 \lstinline{cons} is used to construct values of types with \(\Sigma\) on top.
 \\ \\
-If \(p\) is a \lstinline{(\(\Sigma\) ((x A)) D)}, then \lstinline{(car p)} is an \lstinline{A} and the type of \lstinline{(cdr p)} is obtained by replacing every \lstinline{x} in \lstinline{D} with \lstinline{(car p)}.
+If \(p\) is a \lstinline{(Sigma ((x A)) D)}, then \lstinline{(car p)} is an \lstinline{A} and the type of \lstinline{(cdr p)} is obtained by replacing every \lstinline{x} in \lstinline{D} with \lstinline{(car p)}.
 \\ \\
-Finally, \lstinline{(Pair A D)} is just \lstinline{(\(\Sigma\) ((x A)) D)} where \lstinline{x} does not appear in \lstinline{D}.
+Finally, \lstinline{(Pair A D)} is just \lstinline{(Sigma ((x A)) D)} where \lstinline{x} does not appear in \lstinline{D}.
 \subsection{Reading \(\Sigma\) as a statement}
-The type \lstinline{(\(\Sigma\) ((x A)) D)} can be read as ``there exists an \lstinline{x} of type \lstinline{A} such that \lstinline{D}." Since \lstinline{D} is a type which depends on \lstinline{x}, it can be seen as a sort of predicate of \lstinline{x}.
+The type \lstinline{(Sigma ((x A)) D)} can be read as ``there exists an \lstinline{x} of type \lstinline{A} such that \lstinline{D}." Since \lstinline{D} is a type which depends on \lstinline{x}, it can be seen as a sort of predicate of \lstinline{x}.
 \subsection{The \lstinline{ind-List} eliminator}
 If \begin{align*}
     \lstinline{target} &\text{\quad is a } \lstinline{(List E)} \\
@@ -556,7 +556,7 @@ Technically, \lstinline{ind-List} is not \textit{strictly} stronger than \lstinl
 In this chapter, we saw how the use of dependent types can be used to describe the behaviour of a program with such a degree of specificity that incorrect behaviour simply won't type check. \textcolor{red}{Is this always possible? Are there programs for which there is no ultimate precise type (beyond just the program itself)? In general, what is the relationship between types and program specification?}
 \section{All Lists Are Created Equal}
 \subsection{Summary}
-This chapter introduces the \lstinline{ind-Vec} eliminator, and uses it to define a version of \lstinline{append} which concatenates two values of a \lstinline{Vec} type and to rule out ``foolish" definitions of \lstinline{list\(\to\)vec} from the preceding chapter.
+This chapter introduces the \lstinline{ind-Vec} eliminator, and uses it to define a version of \lstinline{append} which concatenates two values of a \lstinline{Vec} type and to rule out ``foolish" definitions of \lstinline{list->vec} from the preceding chapter.
 \subsection{The \lstinline{ind-Vec} eliminator}
 If \begin{align*}
     \lstinline{target-1} &\text{\quad is a } \lstinline{Nat} \\
@@ -571,7 +571,6 @@ then the expression \(E \coloneqq\) \lstinline{(ind-Vec target-1 target-2 mot ba
 \subsection{Superfluence (?) of \lstinline{ind-Vec} with respect to \lstinline{ind-Nat}}
 I believe \lstinline{ind-Vec} should be implementable with \lstinline{ind-Nat}, as below
 \begin{lstlisting}
-
 (claim my-ind-Vec
   (Pi ((E U)
        (target-1 Nat)
@@ -599,9 +598,9 @@ However, this currently doesn't compile because Pie doesn't realize that \lstinl
 \subsection{Type constructors: \textit{parameters} vs. \textit{indices}}
 The type constructor \lstinline{Vec} takes two arguments, a \(\mathcal{U} \; E\), which describes the types of the elements contained in the \lstinline{Vec} and a \lstinline{Nat} \(n\) which describes how many elements are in the \lstinline{Vec}. These two arguments behave very differently; the first does not vary as you grow a vector, whereas the second does. That is, the value of \(n\) will change when you use \lstinline{vec::}, but the value of \(E\) can not change. Arguments like \(E\), which don't change are called \textit{parameters} while arguments like \(n\) which do change are called \textit{indices}.
 \subsection{Ruling out ``foolish" definitions with \textit{extrinsic} proofs}
-In the prior chapter, the type of \lstinline{list\(\to\)vec} permitted ``foolish" definitions which don't \textit{really} convert a list to a vector. In this chapter, with the help of functions \lstinline{vec\(\to\)list}, we can construct proofs which will rule out many of these kinds of ``foolish" definitions.
+In the prior chapter, the type of \lstinline{list->vec} permitted ``foolish" definitions which don't \textit{really} convert a list to a vector. In this chapter, with the help of functions \lstinline{vec->list}, we can construct proofs which will rule out many of these kinds of ``foolish" definitions.
 \\ \\
-In this chapter, the proof is that of the fact that \lstinline{vec\(\to\)list} is a left-inverse to \lstinline{list\(\to\)vec}. This is sufficient to rule out the example ``foolish" definitions from the prior chapter, but not all of them: for example, if \lstinline{list\(\to\)vec} reversed its argument but \lstinline{vec\(\to\)list} reversed it back, then this statement would be true, but our definition would still be foolish.
+In this chapter, the proof is that of the fact that \lstinline{vec->list} is a left-inverse to \lstinline{list->vec}. This is sufficient to rule out the example ``foolish" definitions from the prior chapter, but not all of them: for example, if \lstinline{list->vec} reversed its argument but \lstinline{vec->list} reversed it back, then this statement would be true, but our definition would still be foolish.
 \\ \\
 The authors accept this, stating that the point is generally only to rule out the ``foolish" definitions one is prone to, not every possible incorrect definition. This is reasonable, but it's fun to be unreasonable, so, \textcolor{red}{how \textit{do} we rule out every possible incorrect definition. How do we show that \lstinline{list->vec} is exactly the function we want?} To do this extrinsically boils down to finding some predicate on a function \(f\) which is true if and only if \(f\) is equal to \lstinline{list->vec}. One such predicate might be one that says the element at index \(i\) of \(x\) and \(f(x)\) are equal for all \(i < n\), where \(n\) is the length of \(x\). This statement \textit{is} representable in Pie, but the proof might be annoying, mostly because representing the statement itself is really cumbersome.
 \subsection{A question about intrinsic and extrinsic proofs}
@@ -609,14 +608,37 @@ The authors say that using types to rule out invalid definitions is an example o
 \section{Even Numbers Can Be Odd}
 \subsection{Summary}
 In this chapter, we use the tools we've already developed to formulate and prove some concrete statements in Pie. Specifically, we discuss using the \(\Sigma\) type, which we know encodes statements like ``there exists \(x\) such that \(P(x)\)" to construct types which represent the predicates ``\(n\) is even" and ``\(n\) is odd". Specifically, \(n\) is even if and only if \(\exists k. n = 2k\), which translates into Pie as the type \[
-    \lstinline{(\(\Sigma\) ((k Nat)) (= Nat n (+ k k)))}
+    \lstinline{(Sigma ((k Nat)) (= Nat n (+ k k)))}
 \] and similarly the statement ``\(n\) is odd" translates as \[
-    \lstinline{(\(\Sigma\) ((k Nat)) (= Nat n (+ 1 (+ k k))))}
+    \lstinline{(Sigma ((k Nat)) (= Nat n (+ 1 (+ k k))))}
 \]
 \subsection{Non-constructive existence?}
 A cool thing about representing existence statements with the \(\Sigma\) type is that a proof of \(\exists x. P(x)\) gives a concrete value \(x\) such that \(P(x)\) is true. This is in contrast to the conventional treatment of existence statements in mathematics, wherein the existence of a value \(x\) and the actual value(s) of \(x\) are separate. \textcolor{red}{What kind of implications does this have for the logical statements representable and provable in Pie? If the only way to prove an existence statement is to provide a specific value, does this make certain statements unprovable or even untrue in Pie? For example, the Intermediate Value Theorem and the Extreme Value Theorem are both existence statements that are proven non-constructively.}
 \subsection{Pair vs Sigma}
-The type \lstinline{(Pair A B)} is just the type \lstinline{(\(\Sigma\) ((x A)) B)}. Now, the \lstinline{Pair} type encodes logical conjunction whereas the \(\Sigma\) type encodes existence (which resembles disjunction more than anything); \textcolor{red}{how do we explain this connection? How does ``logical and" follow as a consequence of existence?}
+The type \lstinline{(Pair A B)} is just the type \lstinline{(Sigma ((x A)) B)}. Now, the \lstinline{Pair} type encodes logical conjunction whereas the \(\Sigma\) type encodes existence (which resembles disjunction more than anything); \textcolor{red}{how do we explain this connection? How does ``logical and" follow as a consequence of existence?}
+\section{Even Haf a Baker's Dozen}
+\subsection{Summary}
+This chapter introduces the \lstinline{Either} type which allows us to represent a ``choice" of types. Given that types themselves represent logical statements, this means we can use \lstinline{Either} to represent the ``logical or" operation. The authors use this and the tools developed in the previous chapter to then prove the statement ``every natural number is either even or odd".
+\subsection{The \lstinline{Either} type}
+For \lstinline{A}, \lstinline{B} types, the expression \lstinline{(Either A B)} is a type which represents ``\lstinline{A} or \lstinline{B}". A value of type \lstinline{(Either A B)} has one of two possible forms:
+\begin{enumerate}
+    \item \lstinline{(left x)}\phantom{t} for \lstinline{x} a value of type \lstinline{A}
+    \item \lstinline{(right x)} for \lstinline{x} a value of type \lstinline{B}
+\end{enumerate}
+To eliminate a value of type \lstinline{(Either A B)}, we use \lstinline{ind-Either}, which takes four arguments,
+\begin{align*}
+    \lstinline{target} &\quad\text{a \lstinline{(Either A B)}} \\\
+    \lstinline{motive} &\quad\text{a \lstinline{(-> (Either A B) U)}} \\
+    \lstinline{on-left} &\quad\text{a \lstinline{(Pi ((l A)) (motive (left l)))}} \\
+    \lstinline{on-right} &\quad\text{a \lstinline{(Pi ((r B)) (motive (right l)))}} 
+\end{align*}
+Given these four arguments, the expression \lstinline{(ind-Either target motive on-left on-right)} has type \lstinline{(motive target)} and has value \lstinline{(on-left l)} when \lstinline{target} is \lstinline{(left l)} and \lstinline{(on-right r)} when \lstinline{target} is \lstinline{(right r)}.
+\subsection{Variable types with \lstinline{ind-Either}?}
+\textcolor{red}{Is it possible to use the \lstinline{ind-Either} type to construct an expression whose type can be completely different depending on the \lstinline{target}? I wouldn't think so, as the motive argument must produce a \lstinline{U}, but maybe there is a way around it?}
+\subsection{Generalizing \lstinline{even-or-odd}}
+In this chapter, the authors use an interesting technique to prove that every number is either even or odd. They use induction to alternate between proofs of ``\(i\) is even" and ``\(i\) is odd" until they eventually have a proof of the parity of \(n\). \textcolor{red}{Can we generalize this proof technique to prove a statement like ``every number is either 0, 1, or 2 modulo 3" or even ``every number is either 0, 1, 2, \(\dots, m-1\) modulo \(m\)"?}
+\subsection{Nested \lstinline{Either}s}
+The above question leads to yet another: \textcolor{red}{how do we represent the disjunction of arbitrarily many types? How do we eliminate such a type?}
 \newpage
 \begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
