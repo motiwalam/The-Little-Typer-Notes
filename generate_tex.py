@@ -37,7 +37,7 @@ class Fragment(Wrapper):
     def wrap(self, s):
         prelude = (
             "This code listing was generated automatically from "
-            "\\href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\\ttt{lib.pie} in this repository}."
+            "\\href{https://github.com/thechosenreader/The-Little-Typer-Notes}{\\lstinline{lib.pie} in this repository}."
         )
         return prelude + s
     
