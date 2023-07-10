@@ -12,9 +12,11 @@
 \usepackage{framed}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{tcolorbox}
-\usepackage{minted}
+% \usepackage{minted}
 \usepackage{etoc}
 \usepackage{etoolbox}
+\usepackage{letltxmacro}
+\usepackage{listings}
 \AtBeginEnvironment{appendix}{\etocsettocdepth.toc{section}\etocignoretoctocdepth}
 
 \hypersetup{
@@ -29,7 +31,7 @@
 \colorlet{LightGreen}{Green!15}
 
 \newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
-\newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\ttt}[1]{\lstinline{#1}}
 \newcommand{\bb}[1]{\mathbb{#1}}
 \newcommand{\bN}{\bb{N}}
 
@@ -57,9 +59,24 @@
     footskip=30pt
 }
 
+\input{piedef}
+\newcommand*{\SavedLstInline}{}
+\LetLtxMacro\SavedLstInline\lstinline
+\DeclareRobustCommand*{\lstinline}{%
+  \ifmmode
+    \let\SavedBGroup\bgroup
+    \def\bgroup{%
+      \let\bgroup\SavedBGroup
+      \hbox\bgroup
+    }%
+  \fi
+  \SavedLstInline
+}
 % ------------------------------------------------------------------------------
 
 \begin{document}
+
+\lstset{language=pie}
 
 % ------------------------------------------------------------------------------
 % Cover Page and ToC
@@ -87,13 +104,13 @@
 \subsection{Summary}
 This chapter introduces terminology, focusing on \textit{judgements} (propositional statements of a specific shape), \textit{expressions} (every well-formed statement about which it makes sense to make judgements), and \textit{types}.
 
-\subsection{The \ttt{Atom} type}
+\subsection{The \lstinline{Atom} type}
 \begin{itemize}
     \item infinitely many constructors! (each atom constructs itself)
     \item an atom is a tick-mark followed by a sequence of letters and hyphens
     \begin{itemize}
-        \item \ttt{'a, 'b, 'a-b-c} are atoms
-        \item \ttt{'0, 'a0, ', ''} are \textbf{not} atoms
+        \item \lstinline{'a, 'b, 'a-b-c} are atoms
+        \item \lstinline{'0, 'a0, ', ''} are \textbf{not} atoms
     \end{itemize}
 \end{itemize}
 
@@ -103,28 +120,28 @@ This chapter introduces terminology, focusing on \textit{judgements} (propositio
         \begin{enumerate}
             \item \underline{\phantom{blank}} is a \underline{\phantom{blank}}.
                 \begin{itemize}
-                    \item \ttt{'a} is a \ttt{Atom}.
-                    \item \ttt{'0} is a \ttt{Atom} (not true but still a judgement).
+                    \item \lstinline{'a} is a \lstinline{Atom}.
+                    \item \lstinline{'0} is a \lstinline{Atom} (not true but still a judgement).
                 \end{itemize}
             \item \underline{\phantom{blank}} is the same \underline{\phantom{blank}} as \underline{\phantom{blank}}.
                 \begin{itemize}
-                    \item \ttt{'a} is the same \ttt{Atom} as \ttt{'a}.
-                    \item \ttt{'b} is the same \ttt{Atom} as \ttt{(cdr (cons 'a 'b))}.
+                    \item \lstinline{'a} is the same \lstinline{Atom} as \lstinline{'a}.
+                    \item \lstinline{'b} is the same \lstinline{Atom} as \lstinline{(cdr (cons 'a 'b))}.
                 \end{itemize}
             \item \underline{\phantom{blank}} is a type.
                 \begin{itemize}
-                    \item \ttt{Atom} is a type.
-                    \item \ttt{(Pair Atom Atom)} is a type.
+                    \item \lstinline{Atom} is a type.
+                    \item \lstinline{(Pair Atom Atom)} is a type.
                 \end{itemize}
             \item \underline{\phantom{blank}} and \underline{\phantom{blank}} are the same type.
                 \begin{itemize}
-                    \item \ttt{Atom} and \ttt{Atom} are the same type.
+                    \item \lstinline{Atom} and \lstinline{Atom} are the same type.
                 \end{itemize}
         \end{enumerate}
     \item Can be believable (true) or not believable (false).
     \item Some judgements require other judgements (i.e, presuppositions) to even make sense.
         \begin{itemize}
-            \item the judgment ``\ttt{'a} is the same \ttt{'b} as \ttt{'c}" requires first the judgement that ``\ttt{'b} is a type"
+            \item the judgment ``\lstinline{'a} is the same \lstinline{'b} as \lstinline{'c}" requires first the judgement that ``\lstinline{'b} is a type"
         \end{itemize}
 \end{itemize}
 
@@ -143,13 +160,13 @@ This chapter introduces terminology, focusing on \textit{judgements} (propositio
 \begin{itemize}
     \item A type is defined by describing its constructors; \textbf{constructor expressions are the direct ways of building expressions with that type}
         \begin{itemize}
-            \item \ttt{zero} and \ttt{add1} are the constructors of the \ttt{Nat} type.
-            \item \ttt{cons} is the constructor of \ttt{Pair} types.
+            \item \lstinline{zero} and \lstinline{add1} are the constructors of the \lstinline{Nat} type.
+            \item \lstinline{cons} is the constructor of \lstinline{Pair} types.
             \item Each atom constructs itself.
         \end{itemize}
     \item type constructors construct types.
         \begin{itemize}
-            \item \ttt{Pair} is a type constructor; \ttt{Pair} on its own is not a type - it needs two arguments to define a new type.
+            \item \lstinline{Pair} is a type constructor; \lstinline{Pair} on its own is not a type - it needs two arguments to define a new type.
         \end{itemize}
 \end{itemize}
 
@@ -164,120 +181,120 @@ This chapter introduces terminology, focusing on \textit{judgements} (propositio
 
 \subsection{Claims and Definitions}
 \begin{itemize}
-    \item We associate a name with an expression via \ttt{define}
+    \item We associate a name with an expression via \lstinline{define}
     \begin{itemize}
-        \item \ttt{(define two (add1 (add1 zero)))}
+        \item \lstinline{(define two (add1 (add1 zero)))}
     \end{itemize}
-    \item Names must first be given types via \ttt{claim} \textit{before defining}.
+    \item Names must first be given types via \lstinline{claim} \textit{before defining}.
     \begin{itemize}
-        \item \ttt{(claim two Nat)}
+        \item \lstinline{(claim two Nat)}
     \end{itemize}
-    \item These are forever. Names can be \ttt{claim}ed and \ttt{define}d at most once.
+    \item These are forever. Names can be \lstinline{claim}ed and \lstinline{define}d at most once.
 \end{itemize}
 
 \section{Doin' What Comes Naturally}
 \subsection{Summary}
 This chapter focuses heavily on \textit{eliminators} which are opposed to \textit{constructors} that are discussed in the previous chapter.
 \\ \\
-We discuss the \(\lambda\) constructor and its eliminator, the application operator (juxtaposition in Pie). The \ttt{which-Nat} eliminator for the \ttt{Nat} type is also introduced.
+We discuss the \(\lambda\) constructor and its eliminator, the application operator (juxtaposition in Pie). The \lstinline{which-Nat} eliminator for the \lstinline{Nat} type is also introduced.
 \\ \\
 Recursion is not an option in Pie.
 \\ \\
 We also discuss the \(\mathcal{U}\) type, which is the type of types. Every \(\mathcal{U}\) is a type, but not every type is a \(\mathcal{U}\); this is because \(\mathcal{U}\) is a type but is not a \(\mathcal{U}\) (no type is itself).
 \\ \\
-Other trivial things like the semantics of function application (substitution), ``neutral" expressions (expressions with free variables), and more on pairs, \ttt{cons}, \ttt{car}, and \ttt{cdr}.
+Other trivial things like the semantics of function application (substitution), ``neutral" expressions (expressions with free variables), and more on pairs, \lstinline{cons}, \lstinline{car}, and \lstinline{cdr}.
 \subsection{Constructors and Eliminators}
 \begin{itemize}
     \item Constructors \textit{build} values whereas Eliminators \textit{dismantle} values.
         \begin{itemize}
-            \item \ttt{(cons 1 2)} builds a \ttt{(Pair Nat Nat)}; to then access the numbers \ttt{1} and \ttt{2} again, we use \ttt{car} and \ttt{cdr}.
-            \item \ttt{(\(\lambda\) (s) s)} builds a \ttt{(\(\rightarrow\) Atom Atom)}; application is the eliminator for functions
+            \item \lstinline{(cons 1 2)} builds a \lstinline{(Pair Nat Nat)}; to then access the numbers \lstinline{1} and \lstinline{2} again, we use \lstinline{car} and \lstinline{cdr}.
+            \item \lstinline{($\lambda$ (s) s)} builds a \lstinline{($\to$ Atom Atom)}; application is the eliminator for functions
         \end{itemize}
-    \item The application eliminator for functions works by pure substitution. Hence, if \ttt{f} is a \ttt{(\(\rightarrow\) X Y)} then \ttt{(\(\lambda\) (y) (f y))} is the same \ttt{(\(\rightarrow\) X Y)} as \ttt{f} \textit{as long as \ttt{y} does not appear in \ttt{f}}. \textcolor{red}{Is this last condition really necessary in Pie, or have the authors introduced it just to make teaching the semantics of function application simpler?}
-    \item The eliminator for \ttt{Nat} is \ttt{which-Nat} which takes a \ttt{Nat} \(k\), an expression which is returned if \(k = 0\) and a function \ttt{f} which, if \(k = \ttt{(add1 n)}\) is equal to \ttt{(f n)}. So, \[
-        \ttt{(\(\lambda\) (k) (which-Nat k zero add1))}
+    \item The application eliminator for functions works by pure substitution. Hence, if \lstinline{f} is a \lstinline{(\(\rightarrow\) X Y)} then \lstinline{(\(\lambda\) (y) (f y))} is the same \lstinline{(\(\rightarrow\) X Y)} as \lstinline{f} \textit{as long as \lstinline{y} does not appear in \lstinline{f}}. \textcolor{red}{Is this last condition really necessary in Pie, or have the authors introduced it just to make teaching the semantics of function application simpler?}
+    \item The eliminator for \lstinline{Nat} is \lstinline{which-Nat} which takes a \lstinline{Nat} \(k\), an expression which is returned if \(k = 0\) and a function \lstinline{f} which, if \(k = \lstinline{(add1 n)}\) is equal to \lstinline{(f n)}. So, \[
+        \lstinline{(\(\lambda\) (k) (which-Nat k zero add1))}
     \]
-    is a silly way of implementing the identity on \ttt{Nat}. \textcolor{red}{How do we write the type of \ttt{which-Nat}? What is the syntax for type variables?}
+    is a silly way of implementing the identity on \lstinline{Nat}. \textcolor{red}{How do we write the type of \lstinline{which-Nat}? What is the syntax for type variables?}
     \item \textbf{Note:} in languages like Haskell and Erlang that support pattern matching, it seems like we get eliminators built in to the syntax of the language. \textcolor{red}{How do Pie eliminators differ from pattern matching?}
 \end{itemize}
 \subsection{Type Values and the Universal Type \(\mathcal{U}\)}
 \begin{itemize}
-    \item \ttt{\(\mathcal{U}\)} is the universal type; it is the type of types.
-    \item To define a type alias, we use \ttt{(claim alias \(\mathcal{U}\))} and \ttt{(define alias type-expr)}
+    \item \lstinline{$\mathcal{U}$} is the universal type; it is the type of types.
+    \item To define a type alias, we use \lstinline{(claim alias $\mathcal{U}$)} and \lstinline{(define alias type-expr)}
         \begin{itemize}
-            \item \ttt{(claim Predicate \(\mathcal{U}\))} and \ttt{(define Predicate (\(\rightarrow\) Nat Bool)}
+            \item \lstinline{(claim Predicate $\mathcal{U}$)} and \lstinline{(define Predicate (\(\rightarrow\) Nat Bool)}
         \end{itemize}
-    \item Type constructors are parameterized types, such as \ttt{Pair} or \ttt{\(\rightarrow\)}.
+    \item Type constructors are parameterized types, such as \lstinline{Pair} or \lstinline{\(\rightarrow\)}.
     \item Type values are expressions with a type constructor at the top.
     \item Every \(\mathcal{U}\) is a type; but not all types are \(\mathcal{U}\) (in particular, \(\mathcal{U}\) is a type but not a \(\mathcal{U}\) because no type is itself)
 \end{itemize}
 \subsection{Equivalence of expressions}
 \begin{itemize}
     \item Neutral expressions are those with free variables; identically written neutral expressions are always the same, regardless of type.
-    \item The semantics of \ttt{claim} and \ttt{define} are as you'd expect; if \ttt{name} is \ttt{claim}ed to be an \ttt{X} and \ttt{define}d to be \ttt{expr}, then \ttt{name} is the same \ttt{X} as \ttt{expr}.
-    \item \(\eta\)-equivalence; \ttt{f} is the same function as \ttt{(\(\lambda\) (x) (f x))}.
-    \item If \ttt{p} is a \ttt{(Pair X Y)} then \ttt{p} is the same \ttt{(Pair X Y)} as \ttt{(cons (car p) (cdr p))}.
+    \item The semantics of \lstinline{claim} and \lstinline{define} are as you'd expect; if \lstinline{name} is \lstinline{claim}ed to be an \lstinline{X} and \lstinline{define}d to be \lstinline{expr}, then \lstinline{name} is the same \lstinline{X} as \lstinline{expr}.
+    \item \(\eta\)-equivalence; \lstinline{f} is the same function as \lstinline{(\(\lambda\) (x) (f x))}.
+    \item If \lstinline{p} is a \lstinline{(Pair X Y)} then \lstinline{p} is the same \lstinline{(Pair X Y)} as \lstinline{(cons (car p) (cdr p))}.
 \end{itemize}
 \section{Eliminate All Natural Numbers!}
 \subsection{Summary}
-This chapter is all about two new eliminators for \ttt{Nat}, \ttt{iter-Nat} and \ttt{rec-Nat}.
+This chapter is all about two new eliminators for \lstinline{Nat}, \lstinline{iter-Nat} and \lstinline{rec-Nat}.
 \\ \\
-These solve the main problem with \ttt{which-Nat}, which is that it only eliminates one constructor at a time. That is, if \ttt{n = (add1 k)}, then \ttt{which-Nat} will eliminate the singular \ttt{add1} but will not eliminate \ttt{k}. In contrast, \ttt{iter-Nat} and \ttt{rec-Nat} will eliminate all the way down to \ttt{zero}.
+These solve the main problem with \lstinline{which-Nat}, which is that it only eliminates one constructor at a time. That is, if \lstinline{n = (add1 k)}, then \lstinline{which-Nat} will eliminate the singular \lstinline{add1} but will not eliminate \lstinline{k}. In contrast, \lstinline{iter-Nat} and \lstinline{rec-Nat} will eliminate all the way down to \lstinline{zero}.
 \\ \\
-\ttt{iter-Nat} takes a natural number \(n\), an initial value \(s\) of type \(X\), and a unary function \(f : X \to X\), and returns \(f^n(s)\) where \(f^n\) is the \(n\)-fold composition.
+\lstinline{iter-Nat} takes a natural number \(n\), an initial value \(s\) of type \(X\), and a unary function \(f : X \to X\), and returns \(f^n(s)\) where \(f^n\) is the \(n\)-fold composition.
 \\ \\
-\ttt{rec-Nat} takes a natural number \(n\), an initial value \(s\), and a binary function \(f : \mathbb{N} \times X \to X\) and returns \[
+\lstinline{rec-Nat} takes a natural number \(n\), an initial value \(s\), and a binary function \(f : \mathbb{N} \times X \to X\) and returns \[
     f(n - 1, f(n-2, f(\dots, f(0, s)\dots)))
 \]
 The chapter ends with a note on currying: all functions in Pie are functions of one variable and those functions which look multivariable are in fact just single variable functions whose return type is a new function.
 \subsection{Totality} 
 A function is \textit{total} if it assigns a value to every possible argument. Totality is built into the ``typical" notion of functions from mathematics, as a function \(f : A \to B\) is not a function if \(f(a)\) is not defined for some element \(a \in A\). In Pie, \textit{all functions are total.}
-\subsection{The \ttt{iter-Nat} eliminator}
-For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{step} a function from \ttt{X} to \ttt{X}, \[ E \coloneqq \ttt{(iter-Nat target base step)} \] is an \ttt{X}. If \ttt{target} is zero, then \(E\) is the same \ttt{X} as \ttt{base}. Otherwise, if \(E = \) \ttt{(add1 n)}, then \(E\) is the same \ttt{X} as \[
-    \ttt{(step (iter-Nat n base step))}
+\subsection{The \lstinline{iter-Nat} eliminator}
+For \lstinline{X} a type, \lstinline{target} a \lstinline{Nat}, \lstinline{base} a \lstinline{X}, and \lstinline{step} a function from \lstinline{X} to \lstinline{X}, \[ E \coloneqq \lstinline{(iter-Nat target base step)} \] is an \lstinline{X}. If \lstinline{target} is zero, then \(E\) is the same \lstinline{X} as \lstinline{base}. Otherwise, if \(E = \) \lstinline{(add1 n)}, then \(E\) is the same \lstinline{X} as \[
+    \lstinline{(step (iter-Nat n base step))}
 \]
-Intuitively, \ttt{iter-Nat} iterates the function \ttt{step} \ttt{target} times on \ttt{base}.
-\subsection{The \ttt{rec-Nat} eliminator} \label{rec-nat-elim}
-For \ttt{X} a type, \ttt{target} a \ttt{Nat}, \ttt{base} a \ttt{X}, and \ttt{step} a binary function of \ttt{Nat} and \ttt{X} to \ttt{X}, \[ E \coloneqq \ttt{(rec-Nat target base step)} \] is an \ttt{X}. If \ttt{target} is zero, then \(E\) is the same \ttt{X} as \ttt{base}. Otherwise, if \(E = \) \ttt{(add1 n)}, then \(E\) is the same \ttt{X} as \[
-    \ttt{(step n (rec-Nat n base step))}
+Intuitively, \lstinline{iter-Nat} iterates the function \lstinline{step} \lstinline{target} times on \lstinline{base}.
+\subsection{The \lstinline{rec-Nat} eliminator} \label{rec-nat-elim}
+For \lstinline{X} a type, \lstinline{target} a \lstinline{Nat}, \lstinline{base} a \lstinline{X}, and \lstinline{step} a binary function of \lstinline{Nat} and \lstinline{X} to \lstinline{X}, \[ E \coloneqq \lstinline{(rec-Nat target base step)} \] is an \lstinline{X}. If \lstinline{target} is zero, then \(E\) is the same \lstinline{X} as \lstinline{base}. Otherwise, if \(E = \) \lstinline{(add1 n)}, then \(E\) is the same \lstinline{X} as \[
+    \lstinline{(step n (rec-Nat n base step))}
 \]
-\ttt{rec-Nat} achieves \href{https://en.wikipedia.org/wiki/Primitive_recursive_function}{primitive recursion} on the naturals. I don't really know what this means yet, but it looks cool!
-\subsection{Superfluence of \ttt{which-Nat} and \ttt{iter-Nat} with respect to \ttt{rec-Nat}}
-\ttt{rec-Nat} can be used to implement \ttt{which-Nat} and \ttt{iter-Nat} by using a function which ignores the second and first arguments respectively. That is, \[
-    \ttt{(which-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (n-1 \_) (f n-1)))}
+\lstinline{rec-Nat} achieves \href{https://en.wikipedia.org/wiki/Primitive_recursive_function}{primitive recursion} on the naturals. I don't really know what this means yet, but it looks cool!
+\subsection{Superfluence of \lstinline{which-Nat} and \lstinline{iter-Nat} with respect to \lstinline{rec-Nat}}
+\lstinline{rec-Nat} can be used to implement \lstinline{which-Nat} and \lstinline{iter-Nat} by using a function which ignores the second and first arguments respectively. That is, \[
+    \lstinline{(which-Nat n s f)} = \lstinline{(rec-Nat n s (\(\lambda\) (n-1 \_) (f n-1)))}
 \]
 and \[
-    \ttt{(iter-Nat n s f)} = \ttt{(rec-Nat n s (\(\lambda\) (\_ f-n-1) (f f-n-1)))}
+    \lstinline{(iter-Nat n s f)} = \lstinline{(rec-Nat n s (\(\lambda\) (\_ f-n-1) (f f-n-1)))}
 \]
-\subsection{Superfluence of \ttt{rec-Nat} with respect to \ttt{iter-Nat}} \label{recNat-in-iterNat}
-\ttt{iter-Nat} can be used to implement \ttt{rec-Nat}. Let \(X\) be a set, \(f : \mathbb{N} \times X \to X\) a function. Define \(g : \mathbb{N} \times X \to \mathbb{N} \times X\) by \[
+\subsection{Superfluence of \lstinline{rec-Nat} with respect to \lstinline{iter-Nat}} \label{recNat-in-iterNat}
+\lstinline{iter-Nat} can be used to implement \lstinline{rec-Nat}. Let \(X\) be a set, \(f : \mathbb{N} \times X \to X\) a function. Define \(g : \mathbb{N} \times X \to \mathbb{N} \times X\) by \[
     g(n, x) = (n + 1, f(n, x))
 \]
-Then, for all \(n \in \bN\), \(s \in X\), \(g^n(0, s) = (n, \ttt{rec-Nat}(n, s, f))\).
+Then, for all \(n \in \bN\), \(s \in X\), \(g^n(0, s) = (n, \lstinline{rec-Nat}(n, s, f))\).
 \\ \\
 We can see this by induction on \(n\). Let \(s \in X\). In the base case, \[
-    g^0(0, s) = (0, s) = (0, \ttt{rec-Nat}(0, s, f))
+    g^0(0, s) = (0, s) = (0, \lstinline{rec-Nat}(0, s, f))
 \]
-Now, let \(k \in \bN\) be arbitrary and suppose \(g^k(0, s) = (k, \ttt{rec-Nat}(k, s, f))\). Then,
+Now, let \(k \in \bN\) be arbitrary and suppose \(g^k(0, s) = (k, \lstinline{rec-Nat}(k, s, f))\). Then,
 \begin{align*}
     g^{k + 1}(0, s) 
         &= g(g^k(0, s)) \\
-        &= g(k, \ttt{rec-Nat}(k, s, f)) \\
-        &= (k + 1, f(k, \ttt{rec-Nat}(k, s, f))) \\
-        &= (k + 1, \ttt{rec-Nat}(k + 1, s, f))
+        &= g(k, \lstinline{rec-Nat}(k, s, f)) \\
+        &= (k + 1, f(k, \lstinline{rec-Nat}(k, s, f))) \\
+        &= (k + 1, \lstinline{rec-Nat}(k + 1, s, f))
 \end{align*}
-Of course, \(g^n(0, s)\) is given by \ttt{(iter-Nat n (cons 0 s) g)}, which gives the result.
+Of course, \(g^n(0, s)\) is given by \lstinline{(iter-Nat n (cons 0 s) g)}, which gives the result.
 \\ \\
-This implementation of \ttt{rec-Nat} in terms of \ttt{iter-Nat} can be found \hyperref[code:rec-Nat2]{here}.
+This implementation of \lstinline{rec-Nat} in terms of \lstinline{iter-Nat} can be found \hyperref[code:rec-Nat2]{here}.
 \subsection{Some notes on primitive recursion}
-As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves primitive recursion.
+As mentioned in \autoref{rec-nat-elim}, the \lstinline{rec-Nat} eliminator achieves primitive recursion.
 \begin{itemize}
     \item 
-        Primitive recursion \textbf{does not} yield every possible computable function. A cool counterexample is the \href{https://en.wikipedia.org/wiki/Ackermann_function}{Ackermann function} which is well-defined, total, and computable, but not primitive recursive. \textcolor{red}{Does this mean that the Ackermann function can not be defined in Pie? Does Pie have more constructs beyond \ttt{rec-Nat} capable of surpassing the computing power of primitive recursion?}
+        Primitive recursion \textbf{does not} yield every possible computable function. A cool counterexample is the \href{https://en.wikipedia.org/wiki/Ackermann_function}{Ackermann function} which is well-defined, total, and computable, but not primitive recursive. \textcolor{red}{Does this mean that the Ackermann function can not be defined in Pie? Does Pie have more constructs beyond \lstinline{rec-Nat} capable of surpassing the computing power of primitive recursion?}
     \item
         An intuitive way of understanding the computing power of primitive recursion is via ``the computer language" definition. That is, primitive recursion has the same computing power as a programming language with arithmetic, conditionals, comparisons, and \textbf{bounded} loops.
     \item
-        Clearly, \ttt{rec-Nat} allows us to define functions that depend only on their previous value. That is, if \(f : \mathbb{N} \to \mathbb{N}\) is a function such that \(f(n + 1)\) is defined in terms of \(f(n)\) only, then it is easy to implement this using \ttt{rec-Nat} (\textcolor{red}{Is this a sufficient condition for primitive recursion? Do there exist functions like this that are not primitive recursive?}) What if \(f\) depends on two or more previous values, such as the Fibonacci function? We can use something called \href{https://en.wikipedia.org/wiki/Course-of-values_recursion}{course of values recursion} to define these.
+        Clearly, \lstinline{rec-Nat} allows us to define functions that depend only on their previous value. That is, if \(f : \mathbb{N} \to \mathbb{N}\) is a function such that \(f(n + 1)\) is defined in terms of \(f(n)\) only, then it is easy to implement this using \lstinline{rec-Nat} (\textcolor{red}{Is this a sufficient condition for primitive recursion? Do there exist functions like this that are not primitive recursive?}) What if \(f\) depends on two or more previous values, such as the Fibonacci function? We can use something called \href{https://en.wikipedia.org/wiki/Course-of-values_recursion}{course of values recursion} to define these.
     \item
         As a concrete example of the above, here is how we might encode the function \(F : \bN \to \bN\) defined by \[
             F(n) = \begin{cases}
@@ -300,139 +317,139 @@ As mentioned in \autoref{rec-nat-elim}, the \ttt{rec-Nat} eliminator achieves pr
 This chapter is all about the \(\Pi\) type constructor, which allows us to abstract functions over types. With the \(\Pi\) type constructor, we can define functions whose return type depends on the types of its arguments. 
 \subsection{The \(\Pi\) Constructor}
 The \(\Pi\) constructor has the form \[
-    \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
+    \lstinline{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
 \]
-where each \(\ttt{x}_i\) is an identifier, \(\ttt{X}_i\) is a type, and \ttt{R} is an expression describing a type, possible using the identifiers \(\ttt{x}_i\) (where \(\ttt{x}_i\) represents a value of type \(\ttt{X}_i\)).
+where each \(\lstinline{x}_i\) is an identifier, \(\lstinline{X}_i\) is a type, and \lstinline{R} is an expression describing a type, possible using the identifiers \(\lstinline{x}_i\) (where \(\lstinline{x}_i\) represents a value of type \(\lstinline{X}_i\)).
 \\ \\
-A value of type \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)} is a function which takes \(n\) arguments, where the \(i\)'th argument is of type \(\ttt{X}_i\) and produces a result of type \ttt{R}.
+A value of type \lstinline{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)} is a function which takes \(n\) arguments, where the \(i\)'th argument is of type \(\lstinline{X}_i\) and produces a result of type \lstinline{R}.
 \subsection{Superfluence of \(\to\) with respect to \(\Pi\)}
 The \(\to\) type constructor is syntax sugar for the \(\Pi\) type constructor. The type \[
-    \ttt{(\(\to\) X\(_1\) ... X\(_n\) R)}
+    \lstinline{(\(\to\) X\(_1\) ... X\(_n\) R)}
 \] is equivalent to the type \[
-    \ttt{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
+    \lstinline{(\(\Pi\) ((x\(_1\) X\(_1\)) ... (x\(_n\) X\(_n\))) R)}
 \]
-The power of the \(\Pi\) operator comes from the fact that the \ttt{R} type is allowed to depend on the \ttt{x}\(_i\)'s, so if \ttt{X}\(_i\) is \(\mathcal{U}\), then \ttt{R} can denote a variable type.
+The power of the \(\Pi\) operator comes from the fact that the \lstinline{R} type is allowed to depend on the \lstinline{x}\(_i\)'s, so if \lstinline{X}\(_i\) is \(\mathcal{U}\), then \lstinline{R} can denote a variable type.
 \section{Lists, Lists, and More Lists}
 \subsection{Summary}
-This chapter introduces the \ttt{List} type, which behaves about how you'd expect. There isn't really anything new or surprising here.
-\subsection{The \ttt{List} type}
-Given a type \ttt{E}, \ttt{(List E)} describes a new type.
-\subsection{The \ttt{nil} and \ttt{::} constructors}
-The \ttt{List} type has two constructors, \ttt{nil} and \ttt{::}; the first constructs the empty list whereas the second tacks on a new element ``to the front" of an existing list.
-\subsection{The \ttt{rec-List} eliminator}
-Given a list \((x_1, \dots, x_n)\) of type \ttt{(List A)}, some value \(s\) of type \(X\), and a function \(f : \ttt{A} \times \ttt{(List A)} \times X \to X\), the \ttt{rec-List} eliminator returns \[
+This chapter introduces the \lstinline{List} type, which behaves about how you'd expect. There isn't really anything new or surprising here.
+\subsection{The \lstinline{List} type}
+Given a type \lstinline{E}, \lstinline{(List E)} describes a new type.
+\subsection{The \lstinline{nil} and \lstinline{::} constructors}
+The \lstinline{List} type has two constructors, \lstinline{nil} and \lstinline{::}; the first constructs the empty list whereas the second tacks on a new element ``to the front" of an existing list.
+\subsection{The \lstinline{rec-List} eliminator}
+Given a list \((x_1, \dots, x_n)\) of type \lstinline{(List A)}, some value \(s\) of type \(X\), and a function \(f : \lstinline{A} \times \lstinline{(List A)} \times X \to X\), the \lstinline{rec-List} eliminator returns \[
     f(x_1, (x_2, \dots, x_n), f(x_2, (x_3, \dots, x_n), f(\dots, f(x_n, (), s) \dots)))
 \]
-In other words, let \ttt{target} be a \ttt{(List E)}, \ttt{base} be an \ttt{X}, and \ttt{step} be a \ttt{(\(\to\) E (List E) X X)}. If \ttt{target} is the same as \ttt{nil}, then \ttt{(rec-List target base step)} is the same \ttt{X} as \ttt{base}. If \ttt{target} is \ttt{(:: e es)}, then \ttt{(rec-List target base step)} is the same \ttt{X} as \[
-    \ttt{(step e es (rec-List es base step))}
+In other words, let \lstinline{target} be a \lstinline{(List E)}, \lstinline{base} be an \lstinline{X}, and \lstinline{step} be a \lstinline{(\(\to\) E (List E) X X)}. If \lstinline{target} is the same as \lstinline{nil}, then \lstinline{(rec-List target base step)} is the same \lstinline{X} as \lstinline{base}. If \lstinline{target} is \lstinline{(:: e es)}, then \lstinline{(rec-List target base step)} is the same \lstinline{X} as \[
+    \lstinline{(step e es (rec-List es base step))}
 \]
-\ttt{rec-List} is primitive recursion on lists.
-\subsection{Some questions about \ttt{rec-List}}
-\subsubsection{Implementing lists with \ttt{Nat}?}
-Given functions \(\ttt{encode} : X \to \bN\) and \(\ttt{decode} : \bN \to X\), we can represent a \ttt{(List X)} \((x_0, \dots, x_n)\) as the natural number \[
-    \prod_{i = 0}^n p_i^{\ttt{encode}(x_i)}
+\lstinline{rec-List} is primitive recursion on lists.
+\subsection{Some questions about \lstinline{rec-List}}
+\subsubsection{Implementing lists with \lstinline{Nat}?}
+Given functions \(\lstinline{encode} : X \to \bN\) and \(\lstinline{decode} : \bN \to X\), we can represent a \lstinline{(List X)} \((x_0, \dots, x_n)\) as the natural number \[
+    \prod_{i = 0}^n p_i^{\lstinline{encode}(x_i)}
 \] where \(p_i\) is the \(i\)'th prime number.
 \\ \\
-So, \textcolor{red}{might we implement the \ttt{List} type just using \ttt{Nat}? What might go wrong?}
+So, \textcolor{red}{might we implement the \lstinline{List} type just using \lstinline{Nat}? What might go wrong?}
 \\ \\
-Probably, a true equivalent to the \ttt{List} type is not possible, as writing the \ttt{encode} and \ttt{decode} functions for \ttt{Atom} is not possible. However, encoding and decoding functions are easy to write for \ttt{Nat} (successor \& predecessor) and types built on \ttt{Nat} (products of powers of primes \& \hyperref[code:lo]{\(p\)-adic valuations}), so we can at least consider lists of these types.
+Probably, a true equivalent to the \lstinline{List} type is not possible, as writing the \lstinline{encode} and \lstinline{decode} functions for \lstinline{Atom} is not possible. However, encoding and decoding functions are easy to write for \lstinline{Nat} (successor \& predecessor) and types built on \lstinline{Nat} (products of powers of primes \& \hyperref[code:lo]{\(p\)-adic valuations}), so we can at least consider lists of these types.
 \\ \\
 We can represent the empty list with \(0\) so that the length of a list \(\ell\) is 0 if \(\ell = 0\) and otherwise \(\min \{ n \in \bN : p_{n + 1} \nmid \ell \}\) which can be implemented using the \hyperref[code:mu]{bounded minimization operator} and the \hyperref[code:nth-prime]{nth-prime} function.
 \\ \\
-Then, \ttt{rec-List} should also be implementable by using \ttt{rec-Nat} with the target being the length of the list and the step function using \hyperref[code:nth-prime]{nth-prime} and \hyperref[code:lo]{lo} to extract the correct value of \ttt{e} and dividing by all the previous primes to get the value of \ttt{es}.
-\subsubsection{The second argument in the step of \ttt{rec-List}}
-The second argument of the \ttt{step} parameter of \ttt{rec-List} takes both the first element in the list and the remaining elements, as well as the ``almost result". \textcolor{red}{What is the purpose of this argument? Are there functions that can not be implemented without it?}
+Then, \lstinline{rec-List} should also be implementable by using \lstinline{rec-Nat} with the target being the length of the list and the step function using \hyperref[code:nth-prime]{nth-prime} and \hyperref[code:lo]{lo} to extract the correct value of \lstinline{e} and dividing by all the previous primes to get the value of \lstinline{es}.
+\subsubsection{The second argument in the step of \lstinline{rec-List}}
+The second argument of the \lstinline{step} parameter of \lstinline{rec-List} takes both the first element in the list and the remaining elements, as well as the ``almost result". \textcolor{red}{What is the purpose of this argument? Are there functions that can not be implemented without it?}
 \\ \\
-For one thing, the presence of this argument can be made sense of by an appeal to symmetry with \ttt{rec-Nat}. \ttt{Nat} and \ttt{List} are both very similar, in that they are both constructed by starting with a ``base" constructor of zero arguments and then repeatedly applying a sort of ``successor" constructor. \ttt{which-Nat} removes one instance of this successor constructor and gives you access to what's underneath, whereas \ttt{iter-Nat} eliminates ``all the way down" to the base constructor and gives you access to the partial results. \ttt{rec-Nat} combines the power of these two by giving the step function both what is immediately underneath the successor constructor and the partial result.
+For one thing, the presence of this argument can be made sense of by an appeal to symmetry with \lstinline{rec-Nat}. \lstinline{Nat} and \lstinline{List} are both very similar, in that they are both constructed by starting with a ``base" constructor of zero arguments and then repeatedly applying a sort of ``successor" constructor. \lstinline{which-Nat} removes one instance of this successor constructor and gives you access to what's underneath, whereas \lstinline{iter-Nat} eliminates ``all the way down" to the base constructor and gives you access to the partial results. \lstinline{rec-Nat} combines the power of these two by giving the step function both what is immediately underneath the successor constructor and the partial result.
 \\ \\
-For \ttt{List}, the successor constructor takes two arguments, and so \ttt{rec-List} gives the step function both of these arguments, which are the head and the tail of the list.
+For \lstinline{List}, the successor constructor takes two arguments, and so \lstinline{rec-List} gives the step function both of these arguments, which are the head and the tail of the list.
 \\ \\
 This isn't exactly illuminating though. The question remains, \textcolor{red}{is this argument actually useful?} Now, I think the second argument is not \textit{strictly} necessary as long as you have the first one, since you can build it up from scratch, by using a similar trick as in \autoref{recNat-in-iterNat}. Again, though, what kind of algorithms \textit{require} this argument (whether it is explicitly passed in or built up from scratch)?
 \section{Precisely How Many?}
 \subsection{Summary}
-This chapter gives us our first taste of dependent types. The \ttt{Vec} type describes lists with length, so that it depends not only on a type, but on a \textit{value} as well.
+This chapter gives us our first taste of dependent types. The \lstinline{Vec} type describes lists with length, so that it depends not only on a type, but on a \textit{value} as well.
 \\ \\
-We see two eliminators for the \ttt{Vec} type, \ttt{head} and \ttt{tail}, and discuss how to write down the types of these eliminators so that they are total.
-\subsection{The \ttt{Vec} type}
-Given a type \ttt{E}, and a \ttt{Nat k}, \ttt{(Vec E k)} is a type which describes a list of elements of type \ttt{E} with length \ttt{k}.
-\subsection{The \ttt{vecnil} and \ttt{vec::} constructors}
-The \ttt{vecnil} constructor constructs a \ttt{(Vec E 0)}.
+We see two eliminators for the \lstinline{Vec} type, \lstinline{head} and \lstinline{tail}, and discuss how to write down the types of these eliminators so that they are total.
+\subsection{The \lstinline{Vec} type}
+Given a type \lstinline{E}, and a \lstinline{Nat k}, \lstinline{(Vec E k)} is a type which describes a list of elements of type \lstinline{E} with length \lstinline{k}.
+\subsection{The \lstinline{vecnil} and \lstinline{vec::} constructors}
+The \lstinline{vecnil} constructor constructs a \lstinline{(Vec E 0)}.
 \\ \\
-The \ttt{vec::} constructor takes a value of type \ttt{E} and a \ttt{(Vec E k)} and constructs a \ttt{(Vec e (add1 k))}.
-\subsection{The \ttt{head} and \ttt{tail} eliminators}
-The \ttt{head} and \ttt{tail} eliminators do what they sound like they do; \ttt{head} returns the first element whereas \ttt{tail} drops the first element and returns the rest. These are natural functions to define on lists, but they can not be defined for any \ttt{List} type, because the expressions \ttt{(head nil)} and \ttt{(tail nil)} are meaningless. 
+The \lstinline{vec::} constructor takes a value of type \lstinline{E} and a \lstinline{(Vec E k)} and constructs a \lstinline{(Vec e (add1 k))}.
+\subsection{The \lstinline{head} and \lstinline{tail} eliminators}
+The \lstinline{head} and \lstinline{tail} eliminators do what they sound like they do; \lstinline{head} returns the first element whereas \lstinline{tail} drops the first element and returns the rest. These are natural functions to define on lists, but they can not be defined for any \lstinline{List} type, because the expressions \lstinline{(head nil)} and \lstinline{(tail nil)} are meaningless. 
 \\ \\
-Clearly, \ttt{head} and \ttt{tail} are only meaningful when applied to non-empty lists; so we somehow need to describe a type that excludes empty lists! This is where \(\Pi\) comes in; \[
-    \text{\ttt{head} has type \ttt{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (add1 k)) a))}}
+Clearly, \lstinline{head} and \lstinline{tail} are only meaningful when applied to non-empty lists; so we somehow need to describe a type that excludes empty lists! This is where \(\Pi\) comes in; \[
+    \text{\lstinline{head} has type \lstinline{(Pi ((a U) (k Nat)) (-> (Vec a (add1 k)) a))}}
 \] and \[
-    \text{\ttt{tail} has type \ttt{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (add1 k)) (Vec a k)))}}
+    \text{\lstinline{tail} has type \lstinline{(Pi ((a U) (k Nat)) (-> (Vec a (add1 k)) (Vec a k)))}}
 \]
-The type of \ttt{head} depends on a natural number \(k\); given a \(k\), \ttt{head} accepts a vector of length \(k + 1\), thereby guaranteeing the existence of at least one element in the vector and thus making \ttt{head} total. Similarly for \ttt{tail}.
+The type of \lstinline{head} depends on a natural number \(k\); given a \(k\), \lstinline{head} accepts a vector of length \(k + 1\), thereby guaranteeing the existence of at least one element in the vector and thus making \lstinline{head} total. Similarly for \lstinline{tail}.
 \subsection{Some initial impressions}
 Dependent types give us \textit{a lot} more power to describe programs. Suddenly, we can make Pie a lot more ``dynamic". For example, consider the following Python program:
-\begin{minted}{python}
+\begin{lstlisting}[language=python]
     apply = lambda f, args: f(*args)
-\end{minted}
-It is clear what \ttt{apply} is \textit{supposed} to do: take a function and some collection of arguments, and apply the function to those arguments. It is also clear that this function can easily raise an error, but that's par for the course in Python. However, in Pie, we can actually give a reasonable type for \ttt{apply}: \[
-    \ttt{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (NaryOp k a) (Vec a k) a))}
-\] where \ttt{NaryOp} is as \hyperref[code:NaryOp]{defined here}. 
+\end{lstlisting}
+It is clear what \lstinline{apply} is \textit{supposed} to do: take a function and some collection of arguments, and apply the function to those arguments. It is also clear that this function can easily raise an error, but that's par for the course in Python. However, in Pie, we can actually give a reasonable type for \lstinline{apply}: \[
+    \lstinline{(\(\Pi\) ((a U) (k Nat)) (\(\to\) (NaryOp k a) (Vec a k) a))}
+\] where \lstinline{NaryOp} is as \hyperref[code:NaryOp]{defined here}. 
 \\ \\
-Of course, the above type doesn't fully describe the type of our Python program \ttt{apply}, but it's pretty good!
+Of course, the above type doesn't fully describe the type of our Python program \lstinline{apply}, but it's pretty good!
 \\ \\
-Another cool (but admittedly silly) use case is defining \ttt{length}, which we can simply define as:
-\begin{minted}{scheme}
+Another cool (but admittedly silly) use case is defining \lstinline{length}, which we can simply define as:
+\begin{lstlisting}    
 (claim length (Pi ((a U) (k Nat)) (-> (Vec a k) Nat)))
 (define length (lambda (a k v) k))
-\end{minted}
-Similarly, we can define more expressive types for familiar list functions such as \hyperref[code:map]{\ttt{map}} and \hyperref[code:reverse]{\ttt{reverse}} which would express the fact that these do not affect the length of the input list, or \hyperref[code:repeat]{\ttt{repeat}}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
+\end{lstlisting}
+Similarly, we can define more expressive types for familiar list functions such as \hyperref[code:map]{\lstinline{map}} and \hyperref[code:reverse]{\lstinline{reverse}} which would express the fact that these do not affect the length of the input list, or \hyperref[code:repeat]{\lstinline{repeat}}, whose type would reflect the fact that the length of the output list is the same as the input natural number.
 \\ \\
-Unfortunately, we can't implement a lot of these quite yet, since the tools we have for iteration/recursion as of right now will not work for \ttt{Vec}.
+Unfortunately, we can't implement a lot of these quite yet, since the tools we have for iteration/recursion as of right now will not work for \lstinline{Vec}.
 \subsection{How far can we go with dependent types?}
-In this chapter, we saw how the types of \ttt{head} and \ttt{tail} involve the term \ttt{(Vec a (add1 k))}. That \ttt{(add1 k)} can be replaced with any arbitrary program that produces a natural number; so, \textcolor{red}{how can Pie tell if two of these types of expressions are equal if they are written in different ways?}
+In this chapter, we saw how the types of \lstinline{head} and \lstinline{tail} involve the term \lstinline{(Vec a (add1 k))}. That \lstinline{(add1 k)} can be replaced with any arbitrary program that produces a natural number; so, \textcolor{red}{how can Pie tell if two of these types of expressions are equal if they are written in different ways?}
 \\ \\
 For example, suppose we have a function \[
-    \ttt{(claim double (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a k) (Vec a (+ k k)))))}
+    \lstinline{(claim double (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a k) (Vec a (+ k k)))))}
 \]
 and a function \[
-    \ttt{(claim un-interleave (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (* 2 k)) (Pair (Vec a k) (Vec a k)))))}
+    \lstinline{(claim un-interleave (\(\Pi\) ((a U) (k Nat)) (\(\to\) (Vec a (* 2 k)) (Pair (Vec a k) (Vec a k)))))}
 \]
-Would we be able to compose these functions? How can we tell Pie that \ttt{(+ k k)} is the same \ttt{Nat} as \ttt{(* 2 k)}?
+Would we be able to compose these functions? How can we tell Pie that \lstinline{(+ k k)} is the same \lstinline{Nat} as \lstinline{(* 2 k)}?
 \section{It All Depends on the Motive}
 \subsection{Summary}
-This chapter introduces the \ttt{ind-Nat} eliminator, which allows us to use \ttt{rec-Nat} in situations where the type of the ``almost results" change with each call to the step function. 
+This chapter introduces the \lstinline{ind-Nat} eliminator, which allows us to use \lstinline{rec-Nat} in situations where the type of the ``almost results" change with each call to the step function. 
 \\ \\
-This opens up a new class of programs that we couldn't implement before, such as programs that construct or eliminate vectors. In general, \ttt{ind-Nat} enables us to write recursive programs that operate on values of dependent types.
-\subsection{The \ttt{ind-Nat} eliminator}
+This opens up a new class of programs that we couldn't implement before, such as programs that construct or eliminate vectors. In general, \lstinline{ind-Nat} enables us to write recursive programs that operate on values of dependent types.
+\subsection{The \lstinline{ind-Nat} eliminator}
 For
 \begin{align*}
-    \ttt{target} &\quad \text{a \ttt{Nat}} \\
-    \ttt{mot} &\quad \text{a \ttt{(\(\to\) Nat \(\mathcal{U}\))}} \\
-    \ttt{base} &\quad \text{a \ttt{(mot zero)}} \\
-    \ttt{step} &\quad \text{a \ttt{(\(\Pi\) ((k Nat)) (\(\to\) (mot k) (mot (add1 k))))}}
+    \lstinline{target} &\quad \text{a \lstinline{Nat}} \\
+    \lstinline{mot} &\quad \text{a \lstinline{(\(\to\) Nat \(\mathcal{U}\))}} \\
+    \lstinline{base} &\quad \text{a \lstinline{(mot zero)}} \\
+    \lstinline{step} &\quad \text{a \lstinline{(\(\Pi\) ((k Nat)) (\(\to\) (mot k) (mot (add1 k))))}}
 \end{align*}
-the expression \(E \coloneqq \ttt{(ind-Nat target mot base step)}\) is a \ttt{(mot target)}.
+the expression \(E \coloneqq \lstinline{(ind-Nat target mot base step)}\) is a \lstinline{(mot target)}.
 \\ \\
-Furthermore, \(E\) is the same \ttt{(mot zero)} as \ttt{base} when \ttt{target} is zero, and the same \ttt{(mot (add1 n))} as \[
-    \ttt{(step n (ind-Nat n mot base step))}
-\] when \ttt{target} is \ttt{(add1 n)}.
+Furthermore, \(E\) is the same \lstinline{(mot zero)} as \lstinline{base} when \lstinline{target} is zero, and the same \lstinline{(mot (add1 n))} as \[
+    \lstinline{(step n (ind-Nat n mot base step))}
+\] when \lstinline{target} is \lstinline{(add1 n)}.
 \\ \\
-Note that \ttt{ind-Nat} and \ttt{rec-Nat} compute in exactly the same way.
+Note that \lstinline{ind-Nat} and \lstinline{rec-Nat} compute in exactly the same way.
 \\ \\
-Roughly, \ttt{ind-Nat} can be used to compute expressions of the form \[
+Roughly, \lstinline{ind-Nat} can be used to compute expressions of the form \[
     f_n(n, f_{n - 1}(n-1, f_{n-2}(n - 2, \dots f_0(0, s)\dots)))
 \] where \(s \in X_0\) and \(f_k : \bN \times X_k \to X_{k + 1}\). This isn't exactly right, though, as the functions \(f_k\) aren't exactly independent, as the notation might imply, but rather they all have ``roughly the same behaviour". \textcolor{red}{How can we describe this restriction on the sequence of functions more precisely?}
 \\ \\
-So, we can think of applying \ttt{ind-Nat} to \(n\) as a sort of path through the first \(n + 1\) types in an infinite sequence of types. It seems that not all sequences of types are valid, though; for example, I don't think it is possible to use \ttt{ind-Nat} to traverse the sequence \ttt{Atom, Nat, Atom, Nat, \dots} \textcolor{red}{What kind of sequences are valid?}
+So, we can think of applying \lstinline{ind-Nat} to \(n\) as a sort of path through the first \(n + 1\) types in an infinite sequence of types. It seems that not all sequences of types are valid, though; for example, I don't think it is possible to use \lstinline{ind-Nat} to traverse the sequence \lstinline{Atom, Nat, Atom, Nat, \dots} \textcolor{red}{What kind of sequences are valid?}
 \\ \\
-In general, \textcolor{red}{what can \ttt{ind-Nat} do and not do? On one hand, it seems like the new \ttt{mot} argument makes \ttt{ind-Nat} significantly stronger, but it feels like there are some subtle restrictions that aren't obvious from the type}.
-\subsection{Superfluence of \ttt{rec-Nat} with respect to \ttt{ind-Nat}}
-\ttt{rec-Nat} is just \ttt{ind-Nat} with a constant function supplied for \ttt{mot}. This makes sense, as the \ttt{mot} parameter determines the type of \ttt{step} and the ``almost result" at each iteration, which in the case of \ttt{rec-Nat} never changes.
-\subsection{Depending on \ttt{ind-Nat}}
-\ttt{ind-Nat} is necessary when the type of our computation depends on the natural \ttt{target}; that is, \ttt{ind-Nat} is necessary when we are dealing with dependent types. So far, the only dependent type we have seen is the \ttt{Vec} type. By extension, any type which contains the \ttt{Vec} type, such as pairs of vectors, or functions on vectors, are also dependent.
+In general, \textcolor{red}{what can \lstinline{ind-Nat} do and not do? On one hand, it seems like the new \lstinline{mot} argument makes \lstinline{ind-Nat} significantly stronger, but it feels like there are some subtle restrictions that aren't obvious from the type}.
+\subsection{Superfluence of \lstinline{rec-Nat} with respect to \lstinline{ind-Nat}}
+\lstinline{rec-Nat} is just \lstinline{ind-Nat} with a constant function supplied for \lstinline{mot}. This makes sense, as the \lstinline{mot} parameter determines the type of \lstinline{step} and the ``almost result" at each iteration, which in the case of \lstinline{rec-Nat} never changes.
+\subsection{Depending on \lstinline{ind-Nat}}
+\lstinline{ind-Nat} is necessary when the type of our computation depends on the natural \lstinline{target}; that is, \lstinline{ind-Nat} is necessary when we are dealing with dependent types. So far, the only dependent type we have seen is the \lstinline{Vec} type. By extension, any type which contains the \lstinline{Vec} type, such as pairs of vectors, or functions on vectors, are also dependent.
 \\ \\
-In particular, \ttt{ind-Nat} is a natural choice when the value of a computation at the \((n + 1)\)'st stage can be expressed in terms of the value at the \(n\)'th stage \textit{and the types of these values are different}. This enables us to write algorithms like \hyperref[code:drop]{drop} (and hence \hyperref[code:nth-element]{nth-element}), \hyperref[code:range]{range}, \hyperref[code:compose]{compose}, \hyperref[code:args-to-vec]{args\(\to\)vec}, \hyperref[code:apply+]{apply+}, \hyperref[code:zip-with]{zip-with} and \hyperref[code:transpose]{transpose}.
+In particular, \lstinline{ind-Nat} is a natural choice when the value of a computation at the \((n + 1)\)'st stage can be expressed in terms of the value at the \(n\)'th stage \textit{and the types of these values are different}. This enables us to write algorithms like \hyperref[code:drop]{drop} (and hence \hyperref[code:nth-element]{nth-element}), \hyperref[code:range]{range}, \hyperref[code:compose]{compose}, \hyperref[code:args-to-vec]{args\(\to\)vec}, \hyperref[code:apply+]{apply+}, \hyperref[code:zip-with]{zip-with} and \hyperref[code:transpose]{transpose}.
 \subsection{Equivalent formulations of induction}
-The inductive principle embodied in \ttt{ind-Nat} is \textit{weak induction}, i.e the implication: for \(S\) a set, if
+The inductive principle embodied in \lstinline{ind-Nat} is \textit{weak induction}, i.e the implication: for \(S\) a set, if
 \begin{itemize}
     \item \(0 \in S\); and
     \item \(\forall n \in \bb N. (n \in S) \implies (n + 1 \in S)\)
@@ -444,62 +461,161 @@ There is also \textit{strong induction}, i.e the implication: for \(S\) a set, i
 \]
 then \(\forall n \in \bb N. n \in S\).
 \\ \\
-It's well known that weak induction and strong induction are equivalent. \textcolor{red}{Does this equivalence carry over into Pie as well? Can we write a \ttt{strong-ind-Nat} eliminator, in which the result at stage \(n\) can depend on the result at any previous stage?} 
+It's well known that weak induction and strong induction are equivalent. \textcolor{red}{Does this equivalence carry over into Pie as well? Can we write a \lstinline{strong-ind-Nat} eliminator, in which the result at stage \(n\) can depend on the result at any previous stage?} 
 \section{Pick a Number, Any Number}
 \subsection{Summary}
-This chapter introduces the concept of reading types as statements. To this end, we see the \ttt{=} type constructor for the first time, which encodes the idea of equality into a type. We learn about using the \ttt{=} type, its sole constructor \ttt{same}, and one of its eliminators \ttt{cong}.
-\subsection{The \ttt{=} type}
-When \ttt{X} is a type and \ttt{from}, \ttt{to} are both \ttt{X}'s, the expression \ttt{(= X from to)} is a type.
+This chapter introduces the concept of reading types as statements. To this end, we see the \lstinline{=} type constructor for the first time, which encodes the idea of equality into a type. We learn about using the \lstinline{=} type, its sole constructor \lstinline{same}, and one of its eliminators \lstinline{cong}.
+\subsection{The \lstinline{=} type}
+When \lstinline{X} is a type and \lstinline{from}, \lstinline{to} are both \lstinline{X}'s, the expression \lstinline{(= X from to)} is a type.
 \\ \\
-The \ttt{=} type has one constructor: \ttt{same}. Given an \ttt{e} of type \ttt{X}, \ttt{(same e)} is a \ttt{(= X e e)}.
+The \lstinline{=} type has one constructor: \lstinline{same}. Given an \lstinline{e} of type \lstinline{X}, \lstinline{(same e)} is a \lstinline{(= X e e)}.
 \\ \\
-\ttt{cong} is an eliminator for \ttt{=}. Given a \ttt{target} of type \ttt{(= X from to)}, and a function \ttt{f} of type \ttt{(\(\to\) X Y)}, \ttt{(cong target f)} returns a value of type \ttt{(= Y (f from) (f to))}. \ttt{cong} represents the well-definedness of functions; that is, if \(x = y\) then \(f(x) = f(y)\). \ttt{(cong (same x) f)} computes as \ttt{(same (f x))}.
+\lstinline{cong} is an eliminator for \lstinline{=}. Given a \lstinline{target} of type \lstinline{(= X from to)}, and a function \lstinline{f} of type \lstinline{(\(\to\) X Y)}, \lstinline{(cong target f)} returns a value of type \lstinline{(= Y (f from) (f to))}. \lstinline{cong} represents the well-definedness of functions; that is, if \(x = y\) then \(f(x) = f(y)\). \lstinline{(cong (same x) f)} computes as \lstinline{(same (f x))}.
 \subsection{Reading types as statements}
-We may think of types as statements and values as proofs of those statements. Most types we have seen so far represent quite uninteresting statements, such as \ttt{Nat}, \ttt{Atom}, \ttt{List}, and \ttt{Vec}.
+We may think of types as statements and values as proofs of those statements. Most types we have seen so far represent quite uninteresting statements, such as \lstinline{Nat}, \lstinline{Atom}, \lstinline{List}, and \lstinline{Vec}.
 \\ \\
-The \(\Pi\) type constructor is quite interesting, as it represents the universal quantifier. That is, a type like \[\ttt{(\(\Pi\) ((n Nat)) (= Nat (+ n n) (* 2 n)))}\] represents the statement ``for all \ttt{Nat} \(n\), \ttt{(+ n n)} equals \ttt{(* 2 n)}".
+The \(\Pi\) type constructor is quite interesting, as it represents the universal quantifier. That is, a type like \[\lstinline{(\(\Pi\) ((n Nat)) (= Nat (+ n n) (* 2 n)))}\] represents the statement ``for all \lstinline{Nat} \(n\), \lstinline{(+ n n)} equals \lstinline{(* 2 n)}".
 \\ \\
-The \(\to\) type constructor represents the implication; i.e \ttt{(\(\to\) X Y)} represents the statement ``if \ttt{X}, then \ttt{Y}". The connection with \(\Pi\) here is interesting; we know that \(\to\) is syntax sugar for \(\Pi\). So, we might read a \(\Pi\) type as a statement of the form \(\forall x \in X. P(x)\). Then, in a \(\to\) type, \(P\) doesn't use \(x\), so the statement is really \(\forall x \in X. P\). 
+The \(\to\) type constructor represents the implication; i.e \lstinline{(\(\to\) X Y)} represents the statement ``if \lstinline{X}, then \lstinline{Y}". The connection with \(\Pi\) here is interesting; we know that \(\to\) is syntax sugar for \(\Pi\). So, we might read a \(\Pi\) type as a statement of the form \(\forall x \in X. P(x)\). Then, in a \(\to\) type, \(P\) doesn't use \(x\), so the statement is really \(\forall x \in X. P\). 
 \\ \\
-False statements, then, are types for which no values exist. An example is the type \ttt{(= Nat 3 4)}.
+False statements, then, are types for which no values exist. An example is the type \lstinline{(= Nat 3 4)}.
 \subsection{Some questions}
 \subsubsection*{Existence statements}
-\textcolor{red}{How do we represent more sophisticated existence statements?} In some sense, the basic data types like \ttt{Nat}, \ttt{Atom} etc. are existence statements, but they're too simple. \textcolor{red}{How do we something more sophisticated like \(\exists x. P(x)\)?} 
+\textcolor{red}{How do we represent more sophisticated existence statements?} In some sense, the basic data types like \lstinline{Nat}, \lstinline{Atom} etc. are existence statements, but they're too simple. \textcolor{red}{How do we something more sophisticated like \(\exists x. P(x)\)?} 
 \subsubsection*{Negation}
 \textcolor{red}{What does negation look like? How do we negate a type?}
 \subsubsection*{Judgements vs Expressions}
-The authors make a big deal of distinguishing between judgements which are ``attitudes one takes towards expressions" and what types like the \ttt{=} - which are themselves expressions - mean. I don't quite understand this distinction. \textcolor{red}{What exactly is the difference between what the \ttt{=} type says and a judgment of the form ``\(x\) is the same \(X\) as \(y\)?"} It seems like ``sameness" (in the judgement sense) is a strictly stronger condition than equality (in the \ttt{=} sense), so that two things that are the same are necessarily equal but not vice versa.
+The authors make a big deal of distinguishing between judgements which are ``attitudes one takes towards expressions" and what types like the \lstinline{=} - which are themselves expressions - mean. I don't quite understand this distinction. \textcolor{red}{What exactly is the difference between what the \lstinline{=} type says and a judgment of the form ``\(x\) is the same \(X\) as \(y\)?"} It seems like ``sameness" (in the judgement sense) is a strictly stronger condition than equality (in the \lstinline{=} sense), so that two things that are the same are necessarily equal but not vice versa.
 \subsubsection*{Using proofs}
-How do we make use of a proof? For example, The \hyperref[code:concatvec]{concatvec} implementation does not work if we switch the arguments to \ttt{+} in the type; \textcolor{red}{how can we use a proof of the commutativity of \ttt{+} to make such an alternative implementation work?}
+How do we make use of a proof? For example, The \hyperref[code:concatvec]{concatvec} implementation does not work if we switch the arguments to \lstinline{+} in the type; \textcolor{red}{how can we use a proof of the commutativity of \lstinline{+} to make such an alternative implementation work?}
 \section{Double Your Money, Get Twice as Much}
 \subsection{Summary}
-This chapter focuses on a more general purpose eliminator for the \ttt{=} type, from which (almost) all others can be derived: \ttt{replace}. The \ttt{replace} eliminator functions as an advanced type annotation, allowing us to describe the same value with two different types which are equal but may have different normal forms.
-\subsection{The \ttt{replace} eliminator}
-For a type \ttt{X}, given a \ttt{target} of type \ttt{(= X from to)}, a \ttt{motive} of type \ttt{(\(\to\) X \(\mathcal{U}\))}, and a \ttt{base} of type \ttt{(motive from)}, the expression \(E \coloneqq \) \ttt{(replace target motive base)} has the type \ttt{(motive to)}. The \textit{value} of \(E\) is the same as the \textit{value} of \ttt{base}; all that changes is the type.
+This chapter focuses on a more general purpose eliminator for the \lstinline{=} type, from which (almost) all others can be derived: \lstinline{replace}. The \lstinline{replace} eliminator functions as an advanced type annotation, allowing us to describe the same value with two different types which are equal but may have different normal forms.
+\subsection{The \lstinline{replace} eliminator}
+For a type \lstinline{X}, given a \lstinline{target} of type \lstinline{(= X from to)}, a \lstinline{motive} of type \lstinline{(\(\to\) X \(\mathcal{U}\))}, and a \lstinline{base} of type \lstinline{(motive from)}, the expression \(E \coloneqq \) \lstinline{(replace target motive base)} has the type \lstinline{(motive to)}. The \textit{value} of \(E\) is the same as the \textit{value} of \lstinline{base}; all that changes is the type.
 \\ \\
-There are different ways of thinking about \ttt{replace}. From the book, \ttt{replace} embodies the principle of reasoning: \[
+There are different ways of thinking about \lstinline{replace}. From the book, \lstinline{replace} embodies the principle of reasoning: \[
     \text{``if \(x = y\) and \(P(x)\) is true for some predicate \(P\), then \(P(y)\) is true."}
 \]
-In \ttt{replace}, the proof that \(x = y\) is given as \ttt{target}, the predicate \(P\) is given as \ttt{motive}, and the proof that \(P(x)\) is true is given as \ttt{base}.
+In \lstinline{replace}, the proof that \(x = y\) is given as \lstinline{target}, the predicate \(P\) is given as \lstinline{motive}, and the proof that \(P(x)\) is true is given as \lstinline{base}.
 \\ \\
-Alternatively, \ttt{replace} embodies the principle: \[
+Alternatively, \lstinline{replace} embodies the principle: \[
     \text{``if \(x\) is of type \(A\), and \(A\) is an equal type to \(B\), then \(x\) is also of type \(B\)"}
 \]
-This way of thinking about \ttt{replace} follows the exact function/mechanics of \ttt{replace} much more closely. However, it does beg the question, \textcolor{red}{what does it mean for two types to be \textit{equal}?} This is not immediately obvious, as we have seen two distinct ways of thinking about types which yield distinct answers to this question; if we think about types as descriptors of values, then we might say type \(A\) is equal to type \(B\) if every value described by \(A\) is also described by \(B\) and vice versa. On the other hand, if we think about types as (logical) statements, we might say type \(A\) equals type \(B\) if \(A \to B\) and \(B \to A\). Given that implication is modelled by the existence of functions, this latter definition is clearly inadequate, as functions from \ttt{Nat} to \ttt{Atom} and vice versa exist, but \ttt{Nat} and \ttt{Atom} are not the same type. So, \textcolor{red}{how do we define equality on types in a way that agrees with both ways of thinking about types?}
-\subsection{The \ttt{symm} eliminator}
-The \ttt{symm} eliminator embodies the symmetry of the equality relation; given a \ttt{target} of type \ttt{(= X from to)}, \ttt{(symm target)} yields a value of type \ttt{(= X to from)}.
-\subsection{Superfluence of \ttt{cong} with respect to \ttt{replace}}
-Let \(X, Y\) be types. Let \(f : X \to Y\). Let \(x, y\) be values of type \(X\) and suppose \(x = y\). Define the predicate \(P\) on \(X\) by \(P(a) = (f(x) = f(a))\). Clearly, \(P(x)\) is true and since \(x = y\), it follows that \(P(y)\) is also true, so that \(f(x) = f(y)\). This yields a definition of \ttt{cong} in terms of \ttt{replace}, which can be seen \hyperref[code:replace-can-cong]{here}.
-\subsection{Superfluence of \ttt{symm} with respect to \ttt{replace}}
-Let \(X\) be a type and \(x, y\) be values of type \(X\). Suppose \(x = y\). Define the predicate \(P\) on \(X\) by \(P(a) = (a = x)\). Clearly, \(P(x)\) is true, and since \(x = y\), it follows that \(P(y)\) is also true, so that \(y = x\). This yields a definition of \ttt{symm} in terms of \ttt{replace}, which can be seen \hyperref[code:replace-can-symm]{here}.
-\subsection{Superfluence of \ttt{trans} with respect to \ttt{replace}}
-The \ttt{trans} eliminator is not discussed in the book at all, so we might as well discuss it here. Given a \ttt{target-1} of type \ttt{(= from middle)} and a \ttt{target-2} of type \ttt{(= middle to)}, \ttt{(trans target-1 target-2)} gives a value of type \ttt{(= from to)}. In other words, \ttt{trans} embodies the transitivity of the equality relation.
+This way of thinking about \lstinline{replace} follows the exact function/mechanics of \lstinline{replace} much more closely. However, it does beg the question, \textcolor{red}{what does it mean for two types to be \textit{equal}?} This is not immediately obvious, as we have seen two distinct ways of thinking about types which yield distinct answers to this question; if we think about types as descriptors of values, then we might say type \(A\) is equal to type \(B\) if every value described by \(A\) is also described by \(B\) and vice versa. On the other hand, if we think about types as (logical) statements, we might say type \(A\) equals type \(B\) if \(A \to B\) and \(B \to A\). Given that implication is modelled by the existence of functions, this latter definition is clearly inadequate, as functions from \lstinline{Nat} to \lstinline{Atom} and vice versa exist, but \lstinline{Nat} and \lstinline{Atom} are not the same type. So, \textcolor{red}{how do we define equality on types in a way that agrees with both ways of thinking about types?}
+\subsection{The \lstinline{symm} eliminator}
+The \lstinline{symm} eliminator embodies the symmetry of the equality relation; given a \lstinline{target} of type \lstinline{(= X from to)}, \lstinline{(symm target)} yields a value of type \lstinline{(= X to from)}.
+\subsection{Superfluence of \lstinline{cong} with respect to \lstinline{replace}}
+Let \(X, Y\) be types. Let \(f : X \to Y\). Let \(x, y\) be values of type \(X\) and suppose \(x = y\). Define the predicate \(P\) on \(X\) by \(P(a) = (f(x) = f(a))\). Clearly, \(P(x)\) is true and since \(x = y\), it follows that \(P(y)\) is also true, so that \(f(x) = f(y)\). This yields a definition of \lstinline{cong} in terms of \lstinline{replace}, which can be seen \hyperref[code:replace-can-cong]{here}.
+\subsection{Superfluence of \lstinline{symm} with respect to \lstinline{replace}}
+Let \(X\) be a type and \(x, y\) be values of type \(X\). Suppose \(x = y\). Define the predicate \(P\) on \(X\) by \(P(a) = (a = x)\). Clearly, \(P(x)\) is true, and since \(x = y\), it follows that \(P(y)\) is also true, so that \(y = x\). This yields a definition of \lstinline{symm} in terms of \lstinline{replace}, which can be seen \hyperref[code:replace-can-symm]{here}.
+\subsection{Superfluence of \lstinline{trans} with respect to \lstinline{replace}}
+The \lstinline{trans} eliminator is not discussed in the book at all, so we might as well discuss it here. Given a \lstinline{target-1} of type \lstinline{(= from middle)} and a \lstinline{target-2} of type \lstinline{(= middle to)}, \lstinline{(trans target-1 target-2)} gives a value of type \lstinline{(= from to)}. In other words, \lstinline{trans} embodies the transitivity of the equality relation.
 \\ \\
-Let \(X\) be a type. Let \(x, y, z\) be values of type \(X\) and suppose that \(x = y\) and \(y = z\). Define the predicate \(P\) on \(X\) by \(P(a) = (x = a)\). Now, since \(x = y\), \(P(y)\) is true. Since \(y = z\), it follows that \(P(z)\) is also true, and hence \(x = z\). This yields a definition of \ttt{trans} in terms of \ttt{replace}, which can be found \hyperref[code:replace-can-trans]{here}.
-\subsection{Limitations of \ttt{replace}?}
-\ttt{replace} is much more powerful than every eliminator for \ttt{=} except, perhaps, for one: \ttt{ind-=}, which is not discussed in the book but is present in the Pie reference online. \textcolor{red}{Is \ttt{ind-=} strictly stronger than \ttt{replace}? If so, how/why?} 
+Let \(X\) be a type. Let \(x, y, z\) be values of type \(X\) and suppose that \(x = y\) and \(y = z\). Define the predicate \(P\) on \(X\) by \(P(a) = (x = a)\). Now, since \(x = y\), \(P(y)\) is true. Since \(y = z\), it follows that \(P(z)\) is also true, and hence \(x = z\). This yields a definition of \lstinline{trans} in terms of \lstinline{replace}, which can be found \hyperref[code:replace-can-trans]{here}.
+\subsection{Limitations of \lstinline{replace}?}
+\lstinline{replace} is much more powerful than every eliminator for \lstinline{=} except, perhaps, for one: \lstinline{ind-=}, which is not discussed in the book but is present in the Pie reference online. \textcolor{red}{Is \lstinline{ind-=} strictly stronger than \lstinline{replace}? If so, how/why?} 
 \\ \\
-More generally, \textcolor{red}{what can \ttt{replace} \textit{not} do?}.
+More generally, \textcolor{red}{what can \lstinline{replace} \textit{not} do?}.
+\section{It Also Depends on the List}
+\subsection{Summary}
+This chapter introduces two powerful new concepts; induction on lists and the \(\Sigma\) type. 
+\\ \\
+Induction on lists works very similarly to induction on the naturals, as the \lstinline{Nat} type and the \lstinline{List} type share almost exactly the same structure, with the \lstinline{Nat} zero in analogy to the empty list \lstinline{nil} and the \lstinline{add1} constructor for \lstinline{Nat} in analogy to the \lstinline{::} constructor for \lstinline{List}.
+\\ \\
+The \(\Sigma\) type is a more powerful version of the \lstinline{Pair} type, similar to how the \(\Pi\) type is a more powerful version of the \(\to\) type. The \(\Sigma\) type allows us to describe pairs in which the type of the second element depends on the first.
+\subsection{The \(\Sigma\) type}
+The expression \lstinline{(\(\Sigma\) ((x A)) D)} is a type when \lstinline{A} is a type and \lstinline{D} is a type whenever \lstinline{x} is an \lstinline{A}.
+\\ \\
+\lstinline{cons} is used to construct values of types with \(\Sigma\) on top.
+\\ \\
+If \(p\) is a \lstinline{(\(\Sigma\) ((x A)) D)}, then \lstinline{(car p)} is an \lstinline{A} and the type of \lstinline{(cdr p)} is obtained by replacing every \lstinline{x} in \lstinline{D} with \lstinline{(car p)}.
+\\ \\
+Finally, \lstinline{(Pair A D)} is just \lstinline{(\(\Sigma\) ((x A)) D)} where \lstinline{x} does not appear in \lstinline{D}.
+\subsection{Reading \(\Sigma\) as a statement}
+The type \lstinline{(\(\Sigma\) ((x A)) D)} can be read as ``there exists an \lstinline{x} of type \lstinline{A} such that \lstinline{D}." Since \lstinline{D} is a type which depends on \lstinline{x}, it can be seen as a sort of predicate of \lstinline{x}.
+\subsection{The \lstinline{ind-List} eliminator}
+If \begin{align*}
+    \lstinline{target} &\text{\quad is a } \lstinline{(List E)} \\
+    \lstinline{mot} &\text{\quad is a } \lstinline{(\(\to\) (List E) \(\mathcal{U}\))} \\
+    \lstinline{base} &\text{\quad is a } \lstinline{(mot nil)} \\
+    \lstinline{step} &\text{\quad is a } \lstinline{(\(\Pi\) ((e E) (es (List E))) (\(\to\) (mot es) (mot (:: e es))))}
+\end{align*}
+then the expression \(E \coloneqq\) \lstinline{(ind-List target mot base step)} is a \lstinline{(mot target)}. Furthermore, \(E\) is the same \lstinline{(mot nil)} as base when \lstinline{target} is \lstinline{nil} and the same \lstinline{(mot (:: e es))} as \[
+    \lstinline{(step e es (ind-List es mot base step))}
+\] when \lstinline{target} is \lstinline{(:: e es)}.
+\\ \\
+Note that \lstinline{ind-List} computes identically to \lstinline{rec-List}.
+\subsection{Superfluence of \lstinline{rec-List} with respect to \lstinline{ind-List}}
+Just as \lstinline{rec-Nat} is superceded by \lstinline{ind-Nat}, \lstinline{rec-List} is superceded by \lstinline{ind-List} by using a constant function for the \lstinline{motive} argument.
+\\ \\
+Technically, \lstinline{ind-List} is not \textit{strictly} stronger than \lstinline{rec-List}, because of a limitation in Pie whereby the result of the motive argument must be a \(\mathcal{U}\). This means that the object of induction in \lstinline{ind-List} can not be of a type which contains \(\mathcal{U}\); this limitation is not present in \lstinline{rec-List} however. Thus, there exist programs that can be written (in Pie) with \lstinline{rec-List} but not with \lstinline{ind-List}. The same holds for \lstinline{rec-Nat} vs. \lstinline{ind-Nat}.
+\subsection{\lstinline{ind-Nat} vs \lstinline{ind-List}}
+\lstinline{ind-Nat} and \lstinline{ind-List} are both the ``strongest" eliminator for their types. Interestingly, even though lists and vectors are almost identical, an eliminator for vectors which computes identically to \lstinline{ind-List} (officially introduced later in the book as \lstinline{ind-Vec}) can be defined using \lstinline{ind-Nat}, but it does not seem like \lstinline{ind-List} itself can be defined with \lstinline{ind-Nat}. \textcolor{red}{Does this imply some deeper relationship between \lstinline{Nat}s and \lstinline{List}s whereby both are ``fundamental" in a sense that vectors are not?}
+\subsection{``Foolish" definitions}
+In this chapter, we saw how the use of dependent types can be used to describe the behaviour of a program with such a degree of specificity that incorrect behaviour simply won't type check. \textcolor{red}{Is this always possible? Are there programs for which there is no ultimate precise type (beyond just the program itself)? In general, what is the relationship between types and program specification?}
+\section{All Lists Are Created Equal}
+\subsection{Summary}
+This chapter introduces the \lstinline{ind-Vec} eliminator, and uses it to define a version of \lstinline{append} which concatenates two values of a \lstinline{Vec} type and to rule out ``foolish" definitions of \lstinline{list\(\to\)vec} from the preceding chapter.
+\subsection{The \lstinline{ind-Vec} eliminator}
+If \begin{align*}
+    \lstinline{target-1} &\text{\quad is a } \lstinline{Nat} \\
+    \lstinline{target-2} &\text{\quad is a } \lstinline{(Vec E target-1)} \\
+    \lstinline{mot} &\text{\quad is a } \lstinline{(\(\Pi\) ((k Nat)) (\(\to\) (Vec E k) \(\mathcal{U}\)))} \\
+    \lstinline{base} &\text{\quad is a } \lstinline{(mot zero nil)} \\
+    \lstinline{step} &\text{\quad is a } \lstinline{(\(\Pi\) ((k Nat) (h E) (t (Vec E k))) (\(\to\) (mot k t) (mot (add1 k) (vec:: h t))))}
+\end{align*}
+then the expression \(E \coloneqq\) \lstinline{(ind-Vec target-1 target-2 mot base step)} is a \lstinline{(mot target-1 target-2)}. Furthermore, \(E\) is the same \lstinline{(mot zero nil)} as base when \lstinline{target-1} is \lstinline{zero} and \lstinline{target-2} is \lstinline{vecnil} and the same \lstinline{(mot (add1 n) (vec:: e es))} as \[
+    \lstinline{(step n e es (ind-Vec n es mot base step))}
+\] when \lstinline{target-1} is \lstinline{(add1 n)} and \lstinline{target-2} is \lstinline{(vec:: e es)}.
+\subsection{Superfluence (?) of \lstinline{ind-Vec} with respect to \lstinline{ind-Nat}}
+I believe \lstinline{ind-Vec} should be implementable with \lstinline{ind-Nat}, as below
+\begin{minted}{scheme}
+(claim my-ind-Vec
+  (Pi ((E U)
+       (target-1 Nat)
+       (target-2 (Vec E target-1))
+       (motive (Pi ((k Nat)) (-> (Vec E k) U)))
+       (base (motive zero vecnil))
+       (step (Pi ((k Nat)
+                  (e E)
+                  (es (Vec E k)))
+                  (-> (motive k es) (motive (add1 k) (vec:: e es))))))
+    (motive target-1 target-2)))
+
+(define my-ind-Vec
+    (lambda (E target-1 target-2 motive base step)
+        ((ind-Nat
+            target-1
+            (lambda (i) (Pi ((w (Vec E i))) (motive i w)))
+            (lambda (w) base)
+            (lambda (k almost-ind)
+                (lambda (w)
+                    (step k (head w) (tail w) (almost-ind (tail w))))))
+        target-2)))
+\end{minted}
+However, this currently doesn't compile because Pie doesn't realize that \lstinline{w} and \lstinline{(vec:: (head w) (tail w))} are equal vectors (note that this implementation \textit{does} work for a user-defined \lstinline{Vec} type, such as with \lstinline{Pair}, as seen \hyperref[code:PairVec]{here}). Assuming we have a proof of this (that doesn't itself rely on \lstinline{ind-Vec}), I think this implementation should be equivalent. However, the authors seem to suggest that \lstinline{ind-Vec} really is necessary; \textcolor{red}{are there situations in which \lstinline{ind-Nat} is truly superseded by \lstinline{ind-Vec}? What do they look like?}
+\subsection{Type constructors: \textit{parameters} vs. \textit{indices}}
+The type constructor \lstinline{Vec} takes two arguments, a \(\mathcal{U} \; E\), which describes the types of the elements contained in the \lstinline{Vec} and a \lstinline{Nat} \(n\) which describes how many elements are in the \lstinline{Vec}. These two arguments behave very differently; the first does not vary as you grow a vector, whereas the second does. That is, the value of \(n\) will change when you use \lstinline{vec::}, but the value of \(E\) can not change. Arguments like \(E\), which don't change are called \textit{parameters} while arguments like \(n\) which do change are called \textit{indices}.
+\subsection{Ruling out ``foolish" definitions with \textit{extrinsic} proofs}
+In the prior chapter, the type of \lstinline{list\(\to\)vec} permitted ``foolish" definitions which don't \textit{really} convert a list to a vector. In this chapter, with the help of functions \lstinline{vec\(\to\)list}, we can construct proofs which will rule out many of these kinds of ``foolish" definitions.
+\\ \\
+In this chapter, the proof is that of the fact that \lstinline{vec\(\to\)list} is a left-inverse to \lstinline{list\(\to\)vec}. This is sufficient to rule out the example ``foolish" definitions from the prior chapter, but not all of them: for example, if \lstinline{list\(\to\)vec} reversed its argument but \lstinline{vec\(\to\)list} reversed it back, then this statement would be true, but our definition would still be foolish.
+\\ \\
+The authors accept this, stating that the point is generally only to rule out the ``foolish" definitions one is prone to, not every possible incorrect definition. This is reasonable, but it's fun to be unreasonable, so, \textcolor{red}{how \textit{do} we rule out every possible incorrect definition. How do we show that \lstinline{list\(\to\)vec} is exactly the function we want?} To do this extrinsically boils down to finding some predicate on a function \(f\) which is true if and only if \(f\) is equal to \lstinline{list\(\to\)vec}. One such predicate might be one that says the element at index \(i\) of \(x\) and \(f(x)\) are equal for all \(i < n\), where \(n\) is the length of \(x\). This statement \textit{is} representable in Pie, but the proof might be annoying, mostly because representing the statement itself is really cumbersome.
+\subsection{A question about intrinsic and extrinsic proofs}
+The authors say that using types to rule out invalid definitions is an example of an \textit{intrinsic} proof, whereas using separate definitions is called an \textit{extrinsic} proof. \textcolor{red}{What is the relationship between these two styles of proof? Does one supercede the other? Can all intrinsic proofs be turned into extrinsic proofs, and vice versa?}
+\section{Even Numbers Can Be Odd}
+\subsection{Summary}
+In this chapter, we use the tools we've already developed to formulate and prove some concrete statements in Pie. Specifically, we discuss using the \(\Sigma\) type, which we know encodes statements like ``there exists \(x\) such that \(P(x)\)" to construct types which represent the predicates ``\(n\) is even" and ``\(n\) is odd". Specifically, \(n\) is even if and only if \(\exists k. n = 2k\), which translates into Pie as the type \[
+    \lstinline{(\(\Sigma\) ((k Nat)) (= Nat n (+ k k)))}
+\] and similarly the statement ``\(n\) is odd" translates as \[
+    \lstinline{(\(\Sigma\) ((k Nat)) (= Nat n (+ 1 (+ k k))))}
+\]
+\subsection{Non-constructive existence?}
+A cool thing about representing existence statements with the \(\Sigma\) type is that a proof of \(\exists x. P(x)\) gives a concrete value \(x\) such that \(P(x)\) is true. This is in contrast to the conventional treatment of existence statements in mathematics, wherein the existence of a value \(x\) and the actual value(s) of \(x\) are separate. \textcolor{red}{What kind of implications does this have for the logical statements representable and provable in Pie? If the only way to prove an existence statement is to provide a specific value, does this make certain statements unprovable or even untrue in Pie? For example, the Intermediate Value Theorem and the Extreme Value Theorem are both existence statements that are proven non-constructively.}
+\subsection{Pair vs Sigma}
+The type \lstinline{(Pair A B)} is just the type \lstinline{(\(\Sigma\) ((x A)) B)}. Now, the \lstinline{Pair} type encodes logical conjunction whereas the \(\Sigma\) type encodes existence (which resembles disjunction more than anything); \textcolor{red}{how do we explain this connection? How does ``logical and" follow as a consequence of existence?}
 \newpage
 \begin{appendix}
 \section{Some Cool Pie Code} \label{pie-code-appendix}
