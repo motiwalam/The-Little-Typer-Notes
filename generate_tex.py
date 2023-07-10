@@ -50,9 +50,9 @@ class CodeSection(Wrapper):
         label = self.arg.strip().split(' ')[0]
         return (
             f'\\subsubsection{{{self.arg.strip()}}} \\label{{code:{label}}}\n'
-            f'\\begin{{minted}}{{scheme}}\n'
+            f'\\begin{{lstlisting}}\n'
             f'{s}'
-            f'\\end{{minted}}\n'
+            f'\\end{{lstlisting}}\n'
         )
 
 class Line(Container):
