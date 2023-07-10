@@ -33,7 +33,8 @@
         % user defined types
         Bool, HasResidue, HasResidueIn, HasResidue<m, ResidueEliminators, Pair-ResidueEliminators,
         Set, Subset, DFA, NFA, dfa.Delta, nfa.Delta,
-        Pair-SetEliminators,
+        Pair-SetEliminators,Atom,
+        NaryTo,NaryOp,UNat,Predicate,BinNat
     },
     keywordstyle=\orange,
     % value constructors
@@ -52,7 +53,7 @@
     % eliminators
     keywords={[4]
         car,cdr,
-        cong,replace,symm,trans,
+        cong,replace,symm,trans,ind-=,
         ind-Either,
         which-Nat,rec-Nat,iter-Nat,ind-Nat,
         ind-Vec,ind-List,rec-List,
