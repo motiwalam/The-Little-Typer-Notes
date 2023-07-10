@@ -1,0 +1,65 @@
+\lstset{
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    %
+    basicstyle=\ttfamily\color[HTML]{000000},
+    backgroundcolor=\color[HTML]{ffffff},   
+    numberstyle=\color[HTML]{333333},
+    %
+    sensitive=true,
+    columns=fullflexible,
+	keepspaces,
+	showstringspaces=false,
+    mathescape=true,
+    escapeinside={<*}{*>},
+    numbers=left,
+}
+
+\newcommand\orange{\color[HTML]{f08c0a}}
+\newcommand\lime{\color[HTML]{20b027}}
+
+\lstdefinelanguage{pie} {
+	morecomment=[l]{;},
+	commentstyle={\color[HTML]{7f7f7f}\slshape},
+    % type constructors
+	keywords={
+        Pi,->,Nat,Sigma,Pair,=,Either,Trivial,Absurd,Vec,List,
+        % user defined types
+        Bool, HasResidue, HasResidueIn, HasResidue<m, ResidueEliminators, Pair-ResidueEliminators,
+        Set, Subset, DFA, NFA, dfa.Delta, nfa.Delta,
+        Pair-SetEliminators,
+    },
+    keywordstyle=\orange,
+    % value constructors
+	keywords={[2]
+        lambda,add1,left,right,cons,same,zero,nil,vecnil,0,::,vec::,
+        True,False, make-HasResidue<m, make-Pair-ResidueEliminators,
+        make-dfa, make-nfa,
+        make-Pair-SetEliminators,
+    },
+    keywordstyle={[2]\lime},
+    % special
+    keywords={[3]
+        define, claim, the, U
+    },
+    keywordstyle={[3]\color[HTML]{0000ff}},
+    % eliminators
+    keywords={[4]
+        car,cdr,
+        cong,replace,symm,trans,
+        ind-Either,
+        which-Nat,rec-Nat,iter-Nat,ind-Nat,
+        ind-Vec,ind-List,rec-List,
+        tail,head,
+        elim-HasResidue<m, constant-ResidueEliminator, apply-Pair-ResidueEliminators,
+        ind-Set, elim-Set, apply-Pair-SetEliminators,
+    },
+    keywordstyle={[4]\color[HTML]{03a688}},
+	alsoletter={',-,>,<,:,=,+,*,~,@,.},
+}
