@@ -423,9 +423,9 @@ This opens up a new class of programs that we couldn't implement before, such as
 For
 \begin{align*}
     \lstinline{target} &\quad \text{a \lstinline{Nat}} \\
-    \lstinline{mot} &\quad \text{a \lstinline{(\(\to\) Nat \(\mathcal{U}\))}} \\
-    \lstinline{base} &\quad \text{a \lstinline{(mot zero)}} \\
-    \lstinline{step} &\quad \text{a \lstinline{(\(\Pi\) ((k Nat)) (\(\to\) (mot k) (mot (add1 k))))}}
+    \lstinline{mot} &\quad \text{a } \lstinline{-> Nat U)} \\
+    \lstinline{base} &\quad \text{a } \lstinline{(mot zero)} \\
+    \lstinline{step} &\quad \text{a } \lstinline{(Pi ((k Nat)) (-> (mot k) (mot (add1 k))))}
 \end{align*}
 the expression \(E \coloneqq \lstinline{(ind-Nat target mot base step)}\) is a \lstinline{(mot target)}.
 \\ \\
@@ -492,7 +492,7 @@ How do we make use of a proof? For example, The \hyperref[code:concatvec]{concat
 \subsection{Summary}
 This chapter focuses on a more general purpose eliminator for the \lstinline{=} type, from which (almost) all others can be derived: \lstinline{replace}. The \lstinline{replace} eliminator functions as an advanced type annotation, allowing us to describe the same value with two different types which are equal but may have different normal forms.
 \subsection{The \lstinline{replace} eliminator}
-For a type \lstinline{X}, given a \lstinline{target} of type \lstinline{(= X from to)}, a \lstinline{motive} of type \lstinline{(\(\to\) X \(\mathcal{U}\))}, and a \lstinline{base} of type \lstinline{(motive from)}, the expression \(E \coloneqq \) \lstinline{(replace target motive base)} has the type \lstinline{(motive to)}. The \textit{value} of \(E\) is the same as the \textit{value} of \lstinline{base}; all that changes is the type.
+For a type \lstinline{X}, given a \lstinline{target} of type \lstinline{(= X from to)}, a \lstinline{motive} of type \lstinline{(-> X U)}, and a \lstinline{base} of type \lstinline{(motive from)}, the expression \(E \coloneqq \) \lstinline{(replace target motive base)} has the type \lstinline{(motive to)}. The \textit{value} of \(E\) is the same as the \textit{value} of \lstinline{base}; all that changes is the type.
 \\ \\
 There are different ways of thinking about \lstinline{replace}. From the book, \lstinline{replace} embodies the principle of reasoning: \[
     \text{``if \(x = y\) and \(P(x)\) is true for some predicate \(P\), then \(P(y)\) is true."}
@@ -537,9 +537,9 @@ The type \lstinline{(\(\Sigma\) ((x A)) D)} can be read as ``there exists an \ls
 \subsection{The \lstinline{ind-List} eliminator}
 If \begin{align*}
     \lstinline{target} &\text{\quad is a } \lstinline{(List E)} \\
-    \lstinline{mot} &\text{\quad is a } \lstinline{(\(\to\) (List E) \(\mathcal{U}\))} \\
+    \lstinline{mot} &\text{\quad is a } \lstinline{(-> (List E) U)} \\
     \lstinline{base} &\text{\quad is a } \lstinline{(mot nil)} \\
-    \lstinline{step} &\text{\quad is a } \lstinline{(\(\Pi\) ((e E) (es (List E))) (\(\to\) (mot es) (mot (:: e es))))}
+    \lstinline{step} &\text{\quad is a } \lstinline{(Pi ((e E) (es (List E))) (-> (mot es) (mot (:: e es))))}
 \end{align*}
 then the expression \(E \coloneqq\) \lstinline{(ind-List target mot base step)} is a \lstinline{(mot target)}. Furthermore, \(E\) is the same \lstinline{(mot nil)} as base when \lstinline{target} is \lstinline{nil} and the same \lstinline{(mot (:: e es))} as \[
     \lstinline{(step e es (ind-List es mot base step))}
@@ -561,16 +561,17 @@ This chapter introduces the \lstinline{ind-Vec} eliminator, and uses it to defin
 If \begin{align*}
     \lstinline{target-1} &\text{\quad is a } \lstinline{Nat} \\
     \lstinline{target-2} &\text{\quad is a } \lstinline{(Vec E target-1)} \\
-    \lstinline{mot} &\text{\quad is a } \lstinline{(\(\Pi\) ((k Nat)) (\(\to\) (Vec E k) \(\mathcal{U}\)))} \\
+    \lstinline{mot} &\text{\quad is a } \lstinline{(Pi ((k Nat)) (-> (Vec E k) U))} \\
     \lstinline{base} &\text{\quad is a } \lstinline{(mot zero nil)} \\
-    \lstinline{step} &\text{\quad is a } \lstinline{(\(\Pi\) ((k Nat) (h E) (t (Vec E k))) (\(\to\) (mot k t) (mot (add1 k) (vec:: h t))))}
+    \lstinline{step} &\text{\quad is a } \lstinline{(Pi ((k Nat) (h E) (t (Vec E k))) (-> (mot k t) (mot (add1 k) (vec:: h t))))}
 \end{align*}
 then the expression \(E \coloneqq\) \lstinline{(ind-Vec target-1 target-2 mot base step)} is a \lstinline{(mot target-1 target-2)}. Furthermore, \(E\) is the same \lstinline{(mot zero nil)} as base when \lstinline{target-1} is \lstinline{zero} and \lstinline{target-2} is \lstinline{vecnil} and the same \lstinline{(mot (add1 n) (vec:: e es))} as \[
     \lstinline{(step n e es (ind-Vec n es mot base step))}
 \] when \lstinline{target-1} is \lstinline{(add1 n)} and \lstinline{target-2} is \lstinline{(vec:: e es)}.
 \subsection{Superfluence (?) of \lstinline{ind-Vec} with respect to \lstinline{ind-Nat}}
 I believe \lstinline{ind-Vec} should be implementable with \lstinline{ind-Nat}, as below
-\begin{minted}{scheme}
+\begin{lstlisting}
+
 (claim my-ind-Vec
   (Pi ((E U)
        (target-1 Nat)
@@ -593,7 +594,7 @@ I believe \lstinline{ind-Vec} should be implementable with \lstinline{ind-Nat}, 
                 (lambda (w)
                     (step k (head w) (tail w) (almost-ind (tail w))))))
         target-2)))
-\end{minted}
+\end{lstlisting}
 However, this currently doesn't compile because Pie doesn't realize that \lstinline{w} and \lstinline{(vec:: (head w) (tail w))} are equal vectors (note that this implementation \textit{does} work for a user-defined \lstinline{Vec} type, such as with \lstinline{Pair}, as seen \hyperref[code:PairVec]{here}). Assuming we have a proof of this (that doesn't itself rely on \lstinline{ind-Vec}), I think this implementation should be equivalent. However, the authors seem to suggest that \lstinline{ind-Vec} really is necessary; \textcolor{red}{are there situations in which \lstinline{ind-Nat} is truly superseded by \lstinline{ind-Vec}? What do they look like?}
 \subsection{Type constructors: \textit{parameters} vs. \textit{indices}}
 The type constructor \lstinline{Vec} takes two arguments, a \(\mathcal{U} \; E\), which describes the types of the elements contained in the \lstinline{Vec} and a \lstinline{Nat} \(n\) which describes how many elements are in the \lstinline{Vec}. These two arguments behave very differently; the first does not vary as you grow a vector, whereas the second does. That is, the value of \(n\) will change when you use \lstinline{vec::}, but the value of \(E\) can not change. Arguments like \(E\), which don't change are called \textit{parameters} while arguments like \(n\) which do change are called \textit{indices}.
@@ -602,7 +603,7 @@ In the prior chapter, the type of \lstinline{list\(\to\)vec} permitted ``foolish
 \\ \\
 In this chapter, the proof is that of the fact that \lstinline{vec\(\to\)list} is a left-inverse to \lstinline{list\(\to\)vec}. This is sufficient to rule out the example ``foolish" definitions from the prior chapter, but not all of them: for example, if \lstinline{list\(\to\)vec} reversed its argument but \lstinline{vec\(\to\)list} reversed it back, then this statement would be true, but our definition would still be foolish.
 \\ \\
-The authors accept this, stating that the point is generally only to rule out the ``foolish" definitions one is prone to, not every possible incorrect definition. This is reasonable, but it's fun to be unreasonable, so, \textcolor{red}{how \textit{do} we rule out every possible incorrect definition. How do we show that \lstinline{list\(\to\)vec} is exactly the function we want?} To do this extrinsically boils down to finding some predicate on a function \(f\) which is true if and only if \(f\) is equal to \lstinline{list\(\to\)vec}. One such predicate might be one that says the element at index \(i\) of \(x\) and \(f(x)\) are equal for all \(i < n\), where \(n\) is the length of \(x\). This statement \textit{is} representable in Pie, but the proof might be annoying, mostly because representing the statement itself is really cumbersome.
+The authors accept this, stating that the point is generally only to rule out the ``foolish" definitions one is prone to, not every possible incorrect definition. This is reasonable, but it's fun to be unreasonable, so, \textcolor{red}{how \textit{do} we rule out every possible incorrect definition. How do we show that \lstinline{list->vec} is exactly the function we want?} To do this extrinsically boils down to finding some predicate on a function \(f\) which is true if and only if \(f\) is equal to \lstinline{list->vec}. One such predicate might be one that says the element at index \(i\) of \(x\) and \(f(x)\) are equal for all \(i < n\), where \(n\) is the length of \(x\). This statement \textit{is} representable in Pie, but the proof might be annoying, mostly because representing the statement itself is really cumbersome.
 \subsection{A question about intrinsic and extrinsic proofs}
 The authors say that using types to rule out invalid definitions is an example of an \textit{intrinsic} proof, whereas using separate definitions is called an \textit{extrinsic} proof. \textcolor{red}{What is the relationship between these two styles of proof? Does one supercede the other? Can all intrinsic proofs be turned into extrinsic proofs, and vice versa?}
 \section{Even Numbers Can Be Odd}
